@@ -49,7 +49,7 @@ $ pip install crudini
 ```bash
 shares/P2P/tools
 ├── couchpotato       # Contains CouchPotato configuration, database, cache and logs
-│   ├── config.ini    # CouchPotato configuration file (use configurator to initialize, use Web UI for full setup)
+│   ├── config.ini    # CouchPotato configuration file (use configurator to initialize, use Web UI for setup)
 │   └── ...
 ├── medusa            # Contains Medusa configuration, database, cache and logs
 │   ├── config.ini    # Medusa configuration file (use configurator to setup, use Web UI for full setup)
@@ -63,7 +63,7 @@ shares/P2P/tools
 ├── ssl               # Contains certificates for nginx HTTPS access 
 │   └── ...           # **GENERATE FILES .crt AND .key HERE**
 └── transmission      # Contains Transmission configuration, cache and logs
-    ├── settings.json # Transmission configuration file (do not modify, automatically configured by transmission-openvpn service)
+    ├── settings.json # Transmission configuration file (do not modify, overwritten by transmission-openvpn)
     └── ...
 ```
 
