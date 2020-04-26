@@ -1,0 +1,210 @@
+version: "3.3"
+
+volumes:
+
+  # External HD #1
+  # (credentials stored in .env file)
+  external-hd1:
+    driver: local
+    driver_opts:
+      type: cifs
+      o: username=${EXTERNAL_HD1_USERNAME},password=${EXTERNAL_HD1_PASSWORD},uid=${USER_PUID},gid=${USER_PGID},iocharset=utf8,file_mode=0777,dir_mode=0777
+      device: "//192.168.0.254/Seagate-2To"
+
+services:
+
+  # ==========================================================================
+  # Transmission-OpenVPN service
+  # => torrent server secured by VPN connection
+  transmission-openvpn:
+    image: haugene/transmission-openvpn:latest-armhf
+    container_name: transmission-openvpn
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    cap_add:
+      # Admin credentials for docker container
+      - NET_ADMIN
+    devices:
+      # Use tunnel interface (for OpenVPN)
+      - /dev/net/tun
+    environment:
+      # OpenVPN sttings
+      - OPENVPN_PROVIDER=PIA
+      # OPENVPN_CONFIG: comma separated list allowed, with random selection at startup
+      - OPENVPN_CONFIG=Switzerland
+      - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60
+      # OpenVPN credentials to connect to VPN (credentials stored in .env file)
+      - OPENVPN_USERNAME=${OPENVPN_USERNAME}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      # Transmission dirs
+      - TRANSMISSION_HOME=/data/transmission-home
+      - TRANSMISSION_DOWNLOAD_DIR=/storage/complete
+      - TRANSMISSION_INCOMPLETE_DIR_ENABLED=true
+      - TRANSMISSION_INCOMPLETE_DIR=/storage/incomplete
+      - TRANSMISSION_WATCH_DIR_ENABLED=true
+      - TRANSMISSION_WATCH_DIR=/storage/watch
+      # Transmission download / uploads settings
+      - TRANSMISSION_DOWNLOAD_QUEUE_ENABLED=true
+      - TRANSMISSION_DOWNLOAD_QUEUE_SIZE=50
+      - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
+      - TRANSMISSION_SPEED_LIMIT_UP=50
+      # Transmission Web UI: kettu, combustion, transmission-web-control
+      - TRANSMISSION_WEB_UI=kettu
+      # Enable HTTP proxy
+      - WEBPROXY_ENABLED=true
+      # Firewall and routes (block non VPN traffic)
+      - DROP_DEFAULT_ROUTE=true
+      - ENABLE_UFW=true
+      - UFW_ALLOW_GW_NET=true
+      - UFW_EXTRA_PORTS=
+      - UFW_DISABLE_IPTABLES_REJECT=false
+      # Network settings
+      - LOCAL_NETWORK=192.168.0.0/24
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /shares/P2P/tools/transmission:/data/transmission-home
+      # Storage dirs
+      - /shares/P2P/incomplete:/storage/incomplete
+      - /shares/P2P/complete:/storage/complete
+      - /shares/P2P/watch:/storage/watch
+    ports:
+      # Transmission Web UI port
+      - 9091:9091
+      # HTTP Proxy port
+      - 8888:8888
+    restart: always
+
+  # ==========================================================================
+  # Medusa service
+  # => TV shows manager and auto-downloader, connected to torrent server
+  medusa:
+    image: linuxserver/medusa:arm32v7-latest
+    container_name: medusa
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /shares/P2P/tools/medusa:/config
+      # Storage dirs
+      - /shares/P2P/complete/medusa:/storage/complete/medusa
+      - /shares/Data/Series:/storage/Series
+      - external-hd1:/storage/_hd1
+    ports:
+      # Medusa Web UI port
+      - 8081:8081
+    depends_on:
+      - transmission-openvpn
+    restart: always
+
+  # ==========================================================================
+  # CouchPotato service
+  # => Movies manager and auto-downloader, connected to torrent server
+  couchpotato:
+    image: linuxserver/couchpotato:arm32v7-latest
+    container_name: couchpotato
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /shares/P2P/tools/couchpotato:/config
+      # Storage dirs
+      - /shares/P2P/complete/couchpotato:/storage/complete/couchpotato
+      - /shares/Data/Films:/storage/Films
+      - external-hd1:/storage/_hd1
+    ports:
+      # CouchPotato Web UI port
+      - 5050:5050
+    depends_on:
+      - medusa
+    restart: always
+  
+  # ==========================================================================
+  # nginx service
+  # => Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication
+  nginx:
+    image: nginx
+    container_name: nginx
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration file
+      - /shares/P2P/tools/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Password file (use 'configurator' docker container to generate)
+      - /shares/P2P/tools/nginx/passwords:/etc/nginx/passwords:ro
+      # Logs dir
+      - /shares/P2P/tools/nginx/logs:/var/log/nginx
+      # SSL certificates
+      - /shares/P2P/tools/ssl/ahuh.crt:/etc/nginx/certs/ssl.crt:ro
+      - /shares/P2P/tools/ssl/ahuh.key:/etc/nginx/certs/ssl.key:ro
+    ports:
+      # CouchPotato external port
+      - 44450:44450
+      # Medusa external port
+      - 44481:44481
+      # Transmission external port      
+      - 44491:44491
+    # User from docker host to impersonate in container (configured in .env file)
+    user: "${USER_PUID}:${USER_PGID}"
+    depends_on:
+      - transmission-openvpn
+      - medusa
+      - couchpotato
+    restart: always
+
+  # ==========================================================================
+  # MiniDLNA service
+  # => UPnP / DLNA service, used to publish media files on the local network 
+  minidlna:
+    image: vladgh/minidlna:latest
+    container_name: minidlna
+    network_mode: "host"
+    environment:
+      # MiniDLNA settings
+      - MINIDLNA_FRIENDLY_NAME=ahuh-nas
+      - MINIDLNA_MEDIA_DIR=/storage
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /shares/P2P/tools/minidlna:/minidlna
+      # Storage dirs
+      - /shares/P2P/complete:/storage/complete:ro
+      - /shares/Public/Backup:/storage/Backup:ro
+      - /shares/Perso/Photos:/storage/Photos:ro
+      - /shares/Perso/Videos:/storage/Videos:ro      
+      - /shares/Data/MP3:/storage/MP3:ro
+      - /shares/Data/Series:/storage/Series:ro
+      - /shares/Data/Films:/storage/Films:ro
+      - external-hd1:/storage/_hd1:ro
+    # User from docker host to impersonate in container (configured in .env file)
+    user: "${USER_PUID}:${USER_PGID}"
+    depends_on:
+      - nginx
+    restart: always
