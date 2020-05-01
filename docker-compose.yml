@@ -85,7 +85,7 @@ services:
   # Medusa service
   # => TV shows manager and auto-downloader, connected to torrent server
   medusa:
-    image: linuxserver/medusa:arm32v7-latest
+    image: linuxserver/medusa:latest
     container_name: medusa
     dns:
       # Public DNS
@@ -115,7 +115,7 @@ services:
   # CouchPotato service
   # => Movies manager and auto-downloader, connected to torrent server
   couchpotato:
-    image: linuxserver/couchpotato:arm32v7-latest
+    image: linuxserver/couchpotato:latest
     container_name: couchpotato
     dns:
       # Public DNS
@@ -182,7 +182,7 @@ services:
   # MiniDLNA service
   # => UPnP / DLNA service, used to publish media files on the local network 
   minidlna:
-    image: vladgh/minidlna:latest
+    image: vladgh/minidlna:0.3.10
     container_name: minidlna
     network_mode: "host"
     environment:
@@ -198,11 +198,11 @@ services:
       - /shares/P2P/complete:/storage/complete:ro
       - /shares/Public/Backup:/storage/Backup:ro
       - /shares/Perso/Photos:/storage/Photos:ro
-      - /shares/Perso/Videos:/storage/Videos:ro      
+      - /shares/Perso/Videos:/storage/Videos:ro
       - /shares/Data/MP3:/storage/MP3:ro
       - /shares/Data/Series:/storage/Series:ro
       - /shares/Data/Films:/storage/Films:ro
-      - external-hd1:/storage/_hd1:ro
+      #- external-hd1:/storage/_hd1:ro
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
     depends_on:

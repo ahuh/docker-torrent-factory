@@ -2,27 +2,31 @@
 Docker compose dedicated to ARMv7 processors, hosting a complete torrent factory.<br />
 <br />
 This project is based on existing projects, combined and modified to work on ARMv7 WD My Cloud EX2 Ultra NAS.<br />
-See GitHub repositories:
-* https://github.com/haugene/docker-transmission-openvpn
-<br />
+See GitHub repositories / Docker Hub images:
+| Container | URLs |
+|-----------|------|
+| Transmission-OpenVPN | <ul><li>https://github.com/haugene/docker-transmission-openvpn</li><li>https://hub.docker.com/r/haugene/transmission-openvpn</li></ul>|
+| Medusa | <ul><li>https://github.com/linuxserver/docker-medusa</li><li>https://hub.docker.com/r/linuxserver/medusa</li></ul>|
+| CouchPotato | <ul><li>https://github.com/linuxserver/docker-couchpotato</li><li>https://hub.docker.com/r/linuxserver/couchpotato</li></ul>|
+| MiniDLNA | <ul><li>https://github.com/vladgh/docker_base_images/tree/master/minidlna</li><li>https://hub.docker.com/r/vladgh/minidlna</li></ul>|
+| nginx | <ul><li>https://github.com/nginxinc/docker-nginx</li><li>https://hub.docker.com/_/nginx</li></ul>|
 
-## Installation
+## What is it ?
+
+Blabla
+
+![Architecture of the Docker Torrent Factory !](./resources/docker-torrrent-factory.png)
 
 ### Prerequisite
 
-* Arrêter docker : `/usr/sbin/docker_daemon.sh stop`
-* Télécharger sur : https://wdcommunity.com/
-* Installer l'application via web UI MyCloud : MyCloudEX2Ultra_entware_1.05.bin
-* Installer l'application via web UI MyCloud : MyCloudEX2Ultra_docker_19.03.5.bin
-* Installer docker-compose : bridage à v1.23.x car à partir de 1.24 nécessite build librairies crypto en arm (pas possible avec opkg car pas de package dev ?)
-```bash
-$ opkg update
-$ opkg install python3-pip
-$ pip3 install --upgrade pip
-$ pip install setuptools
-$ pip install docker-compose~=1.23.0
-```
-
+On WD MyCloud EX2 Ultra, you need to replace the old docker install by a fresh one, with docker-compose.
+For this, follow these steps:
+* Connect to the NAS with SSH as `root` user (see manualffor details)
+* Stop the docker daemon: `/usr/sbin/docker_daemon.sh stop`
+* Download the following apps from the WD community site: https://wdcommunity.com/
+  * Last version of Entware: `MyCloudEX2Ultra_entware_1.05.bin`
+  * Last version of Docker: `MyCloudEX2Ultra_docker_19.03.5.bin`
+* Install the downloaded apps using the MyCloud web UI: upload and install apps (see manual for details)
 * Install and upgrade python3 and pip :
 ```bash
 $ # Install on MyCloud EX2 Ultra
@@ -36,15 +40,12 @@ $ pip install setuptools
 $ # Install on MyCloud EX2 Ultra : limit to 1.23.x, because >=1.24 requires to build crypto libs in ARM (not possible with opkg because of lack of dev packages)
 $ pip install docker-compose~=1.23.0
 ```
-* Install crudini : download custom 0.9.3 (first version with python3 support, not available yet in pypi)
-```bash
-$ # Install on MyCloud EX2 Ultra
-$ pip install https://github.com/pixelb/crudini/releases/download/0.9.3/crudini-0.9.3.tar.gz
-$ # Install on Raspbian
-$ pip install crudini
-```
+
+On other NAS / Raspberry Pi devices, just install last versions of docker and docker-compose.
 
 ### Directories
+
+The configuration of all the containers are stored on volumes, mapped with the docker host.
 
 ```bash
 shares/P2P/tools
@@ -93,8 +94,10 @@ storage
 └── Videos          # Misc videos on NAS, published with MiniDLNA
 ```
 
+## Installation
+
 ### Preparation
-Before running container, you have to retrieve UID and GID for the user used to mount your tv shows directory:
+Before running the containers, you have to retrieve UID and GID for the user used to mount your directories (configuration, medias):
 * Get user UID:
 ```
 $ id -u <user>
@@ -103,6 +106,4 @@ $ id -u <user>
 ```
 $ id -g <user>
 ```
-The container will run impersonated as this user, in order to have read/write access to the tv shows directory.
-
-### Install
+The containers will run impersonated as this user, in order to have read/write access to the tv shows directory.
