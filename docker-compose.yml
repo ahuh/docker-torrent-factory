@@ -180,7 +180,7 @@ services:
 
   # ==========================================================================
   # MiniDLNA service
-  # => UPnP / DLNA service, used to publish media files on the local network 
+  # => UPnP / DLNA service, used to publish media files on the local network
   minidlna:
     image: vladgh/minidlna:0.3.10
     container_name: minidlna
