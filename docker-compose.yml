@@ -33,7 +33,7 @@ services:
       # OpenVPN sttings
       - OPENVPN_PROVIDER=PIA
       # OPENVPN_CONFIG: comma separated list allowed, with random selection at startup
-      - OPENVPN_CONFIG=Switzerland
+      - OPENVPN_CONFIG=France
       - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60
       # OpenVPN credentials to connect to VPN (credentials stored in .env file)
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
@@ -41,7 +41,7 @@ services:
       # Transmission dirs
       - TRANSMISSION_HOME=/data/transmission-home
       - TRANSMISSION_DOWNLOAD_DIR=/storage/complete
-      - TRANSMISSION_INCOMPLETE_DIR_ENABLED=true
+      - TRANSMISSION_INCOMPLETE_DIR_ENABLED=false
       - TRANSMISSION_INCOMPLETE_DIR=/storage/incomplete
       - TRANSMISSION_WATCH_DIR_ENABLED=true
       - TRANSMISSION_WATCH_DIR=/storage/watch
@@ -51,7 +51,7 @@ services:
       - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
       - TRANSMISSION_SPEED_LIMIT_UP=50
       # Transmission Web UI: kettu, combustion, transmission-web-control
-      - TRANSMISSION_WEB_UI=kettu
+      - TRANSMISSION_WEB_UI=transmission-web-control
       # Enable HTTP proxy
       - WEBPROXY_ENABLED=true
       # Firewall and routes (block non VPN traffic)

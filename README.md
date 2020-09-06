@@ -12,7 +12,7 @@ See GitHub repositories / Docker Hub images:
 | **MiniDLNA**<br />UPnP / DLNA service, used to publish media files on the local network | <ul><li>https://github.com/vladgh/docker_base_images/tree/master/minidlna</li><li>https://hub.docker.com/r/vladgh/minidlna</li></ul>|
 
 ## How does it work ?
-This repository contains a main docker-compose file, configured to launch each dedicated service (docker container). This diagram explains how it works:
+This repository contains a main docker-compose file, configured to launch each dedicated service (docker container). This diagram explains how it works:<br /><br />
 ![Architecture of the Docker Torrent Factory](./resources/docker-torrent-factory.png)
 
 Another docker-compose file is provided to construct a configurator service, that you may use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service. Note that you still can configure each service with the dedicated web UI (Medusa, CouchPotato, etc), to do additional settings.
@@ -47,7 +47,8 @@ $ pip3 install --upgrade pip
 * Install docker-compose :
 ```bash
 $ pip install setuptools
-$ # Install on MyCloud EX2 Ultra : limit to 1.23.x, because >=1.24 requires to build crypto libs in ARM (not possible with opkg because of lack of dev packages)
+$ # Install on MyCloud EX2 Ultra : limit to 1.23.x, because >=1.24 requires to build crypto libs in ARM
+$ #   (not possible with opkg because of lack of dev packages)
 $ pip install docker-compose~=1.23.0
 ```
 
