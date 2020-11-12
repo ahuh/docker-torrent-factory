@@ -61,7 +61,7 @@ crudini --set ${MEDUSA_CONFIG_FILE} General use_torrents 1
 crudini --set ${MEDUSA_CONFIG_FILE} General process_automatically 1
 if [ "${MEDUSA_USE_HTTP_PROXY}" = true ] ; then
 	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_indexers 1
-	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_setting "http://transmission-openvpn:8888"
+	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_setting "http://transmission-openvpn:8789"
 else	
 	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_indexers 0
 	crudini --del ${MEDUSA_CONFIG_FILE} General proxy_setting
@@ -99,7 +99,7 @@ chown ${RUN_AS}:${RUN_AS} ${COUCHPOTATO_CONFIG_FILE}
 # - General section
 if [ "${COUCHPOTATO_USE_HTTP_PROXY}" = true ] ; then
 	crudini --set ${COUCHPOTATO_CONFIG_FILE} core use_proxy 1
-	crudini --set ${COUCHPOTATO_CONFIG_FILE} core proxy_server "transmission-openvpn:8888"
+	crudini --set ${COUCHPOTATO_CONFIG_FILE} core proxy_server "transmission-openvpn:8789"
 else
 	crudini --set ${COUCHPOTATO_CONFIG_FILE} core use_proxy 0
 	crudini --del ${COUCHPOTATO_CONFIG_FILE} core proxy_server

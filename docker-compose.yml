@@ -17,20 +17,14 @@ services:
   # Transmission-OpenVPN service
   # => torrent server secured by VPN connection
   transmission-openvpn:
-    image: haugene/transmission-openvpn:latest-armhf
+    image: haugene/transmission-openvpn:latest
     container_name: transmission-openvpn
-    dns:
-      # Public DNS
-      - 8.8.8.8
-      - 8.8.4.4
     cap_add:
       # Admin credentials for docker container
       - NET_ADMIN
-    devices:
-      # Use tunnel interface (for OpenVPN)
-      - /dev/net/tun
     environment:
-      # OpenVPN sttings
+      - CREATE_TUN_DEVICE=true
+      # OpenVPN settings
       - OPENVPN_PROVIDER=PIA
       # OPENVPN_CONFIG: comma separated list allowed, with random selection at startup
       - OPENVPN_CONFIG=France
@@ -54,12 +48,14 @@ services:
       - TRANSMISSION_WEB_UI=transmission-web-control
       # Enable HTTP proxy
       - WEBPROXY_ENABLED=true
+      - WEBPROXY_PORT=8789
       # Firewall and routes (block non VPN traffic)
       - DROP_DEFAULT_ROUTE=true
-      - ENABLE_UFW=true
-      - UFW_ALLOW_GW_NET=true
-      - UFW_EXTRA_PORTS=
-      - UFW_DISABLE_IPTABLES_REJECT=false
+      # Firewall not working anymore with docker image v3 / new PIA servers ?
+      # - ENABLE_UFW=true
+      # - UFW_ALLOW_GW_NET=true
+      # - UFW_EXTRA_PORTS=
+      # - UFW_DISABLE_IPTABLES_REJECT=false
       # Network settings
       - LOCAL_NETWORK=192.168.0.0/24
       # User from docker host to impersonate in container (configured in .env file)
@@ -78,7 +74,7 @@ services:
       # Transmission Web UI port
       - 9091:9091
       # HTTP Proxy port
-      - 8888:8888
+      - 8789:8789
     restart: always
 
   # ==========================================================================
@@ -107,8 +103,6 @@ services:
     ports:
       # Medusa Web UI port
       - 8081:8081
-    depends_on:
-      - transmission-openvpn
     restart: always
 
   # ==========================================================================
@@ -137,8 +131,6 @@ services:
     ports:
       # CouchPotato Web UI port
       - 5050:5050
-    depends_on:
-      - medusa
     restart: always
   
   # ==========================================================================
@@ -172,10 +164,6 @@ services:
       - 44491:44491
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    depends_on:
-      - transmission-openvpn
-      - medusa
-      - couchpotato
     restart: always
 
   # ==========================================================================
@@ -205,6 +193,31 @@ services:
       #- external-hd1:/storage/_hd1:ro
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    depends_on:
-      - nginx
+    restart: always
+
+  # ==========================================================================
+  # Resilio
+  resilio:
+    image: linuxserver/resilio-sync:latest
+    container_name: resilio
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /shares/P2P/tools/resilio:/config
+      # Storage dirs
+      - /shares/P2P/resilio/downloads:/downloads
+      - /shares/P2P/resilio/sync:/sync
+    ports:
+      # Resilio Web UI port
+      - 8888:8888
+      - 55555:55555
     restart: always

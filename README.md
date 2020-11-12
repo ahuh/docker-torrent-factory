@@ -10,6 +10,7 @@ See GitHub repositories / Docker Hub images:
 | **CouchPotato**<br />Movies manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-couchpotato</li><li>https://hub.docker.com/r/linuxserver/couchpotato</li></ul>|
 | **nginx**<br />Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication | <ul><li>https://github.com/nginxinc/docker-nginx</li><li>https://hub.docker.com/_/nginx</li></ul>|
 | **MiniDLNA**<br />UPnP / DLNA service, used to publish media files on the local network | <ul><li>https://github.com/vladgh/docker_base_images/tree/master/minidlna</li><li>https://hub.docker.com/r/vladgh/minidlna</li></ul>|
+| **Resilio Sync**<br />File sync service based on P2P, used to backup photos / videos from mobiles to NAS on the local network | <ul><li>https://www.resilio.com</li><li>https://hub.docker.com/r/resilio/sync/</li></ul>|
 
 ## How does it work ?
 This repository contains a main docker-compose file, configured to launch each dedicated service (docker container). This diagram explains how it works:<br /><br />
@@ -88,6 +89,7 @@ shares/P2P/tools
 │   ├── nginx.conf    # nginx configuration file (use configurator to setup)
 │   ├── passwords     # nginx credentials for basic authentication (use configurator to setup)
 │   └── logs          # nginx logs
+├── resilio           # Contains Resilio configuration files (databases)
 ├── ssl               # Contains certificates for nginx HTTPS access 
 │   └── ...           # **GENERATE FILES .crt AND .key HERE**
 └── transmission      # Contains Transmission configuration, cache and logs
@@ -112,6 +114,9 @@ storage
 │   └── seed        # Seeding torrents by Transmission
 ├── incomplete      # Currently downloading torrents by Transmission
 ├── watch           # Watch directory for *.torrent files
+├── resilio         # Watch directory for *.torrent files
+│   ├── downloads   # Resilio downloads directory
+│   └── sync        # Resilio sync directory
 ├── ...
 ├── Backup          # Old personal photos & videos, published with MiniDLNA
 ├── Films           # Movies on NAS, managed by CouchPotato and published with MiniDLNA
