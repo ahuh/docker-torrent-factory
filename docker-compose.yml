@@ -137,7 +137,7 @@ services:
   # nginx service
   # => Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication
   nginx:
-    image: nginx
+    image: nginx:latest
     container_name: nginx
     dns:
       # Public DNS
@@ -170,7 +170,7 @@ services:
   # MiniDLNA service
   # => UPnP / DLNA service, used to publish media files on the local network
   minidlna:
-    image: vladgh/minidlna:0.3.10
+    image: vladgh/minidlna:latest
     container_name: minidlna
     network_mode: "host"
     environment:
