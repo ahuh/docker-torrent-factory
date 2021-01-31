@@ -177,6 +177,9 @@ services:
       # MiniDLNA settings
       - MINIDLNA_FRIENDLY_NAME=ahuh-nas
       - MINIDLNA_MEDIA_DIR=/storage
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
     volumes:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
@@ -191,8 +194,6 @@ services:
       - /shares/Data/Series:/storage/Series:ro
       - /shares/Data/Films:/storage/Films:ro
       #- external-hd1:/storage/_hd1:ro
-    # User from docker host to impersonate in container (configured in .env file)
-    user: "${USER_PUID}:${USER_PGID}"
     restart: always
 
   # ==========================================================================
