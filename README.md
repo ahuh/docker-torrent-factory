@@ -10,13 +10,16 @@ See GitHub repositories / Docker Hub images:
 | **CouchPotato**<br />Movies manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-couchpotato</li><li>https://hub.docker.com/r/linuxserver/couchpotato</li></ul>|
 | **nginx**<br />Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication | <ul><li>https://github.com/nginxinc/docker-nginx</li><li>https://hub.docker.com/_/nginx</li></ul>|
 | **MiniDLNA**<br />UPnP / DLNA service, used to publish media files on the local network | <ul><li>https://github.com/vladgh/docker_base_images/tree/master/minidlna</li><li>https://hub.docker.com/r/vladgh/minidlna</li></ul>|
-| **Resilio Sync**<br />File sync service based on P2P, used to backup photos / videos from mobiles to NAS on the local network | <ul><li>https://www.resilio.com</li><li>https://hub.docker.com/r/resilio/sync/</li></ul>|
+| **Resilio Sync**<br />File sync service based on P2P, used to backup photos / videos from smartphones to NAS on the local network | <ul><li>https://www.resilio.com</li><li>https://hub.docker.com/r/resilio/sync/</li></ul>|
+| **Pyphotorg**<br />Photo organizer and deduplicator, used to manage photos / videos on the NAS | <ul><li>https://github.com/ahuh/docker-torrent-factory/tree/master/pyphotorg</li><li>https://hub.docker.com/r/ahuh/pyphotorg</li></ul>|
 
 ## How does it work ?
-This repository contains a main docker-compose file, configured to launch each dedicated service (docker container). This diagram explains how it works:<br /><br />
+This repository contains a main `docker-compose.yml` file, configured to launch each dedicated service (docker containers). This diagram explains how it works:<br /><br />
 ![Architecture of the Docker Torrent Factory](./resources/docker-torrent-factory.png)
 
-Another docker-compose file is provided to construct a configurator service, that you may use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service. Note that you still can configure each service with the dedicated web UI (Medusa, CouchPotato, etc), to do additional settings.
+Other docker compose files are available :
+* The `docker-compose-configurator.yml` file is provided to construct a **Configurator** service, that you may optionally use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service. Note that you still can configure each service with the dedicated web UI (Medusa, CouchPotato, etc), to do additional settings.
+* The `docker-compose-portainer.yml` file is provided to deploy a **Portainer** service, that you may use to monitor and manager your docker environment with a web UI.
 
 ## Features
 * TODO
@@ -36,7 +39,7 @@ For this, follow these steps:
 * Stop the docker daemon: `/usr/sbin/docker_daemon.sh stop`
 * Download the following apps from the WD community site: https://wdcommunity.com/
   * Last version of Entware: `MyCloudEX2Ultra_entware_1.05.bin`
-  * Last version of Docker: `MyCloudEX2Ultra_docker_19.03.5.bin`
+  * Last version of Docker: `MyCloudEX2Ultra_docker_19.03.8.bin`
 * Install the downloaded apps using the MyCloud web UI: upload and install apps (see manual for details)
 * Install and upgrade python3 and pip :
 ```bash
@@ -75,14 +78,17 @@ The containers will run impersonated as this user, in order to have read/write a
 ### Directories
 The configuration of all the containers are stored on volumes, mapped with the docker host.
 
+#### Directory structure on host-side
+For tools configuration and logs (CouchPotato, Medusa, MiniDLNA, nginx, Resilio, Transmission):
+
 ```bash
 shares/P2P/tools
 ├── couchpotato       # Contains CouchPotato configuration, database, cache and logs
-│   ├── config.ini    # CouchPotato configuration file (use configurator to initialize, use Web UI for setup)
-│   └── ...
+│   ├── config.ini    # CouchPotato configuration file (use configurator to initialize, use Web UI
+│   └── ...           #   for setup)
 ├── medusa            # Contains Medusa configuration, database, cache and logs
-│   ├── config.ini    # Medusa configuration file (use configurator to setup, use Web UI for full setup)
-│   └── ...
+│   ├── config.ini    # Medusa configuration file (use configurator to setup, use Web UI for full
+│   └── ...           #   setup)
 ├── minidlna          # Contains MiniDLNA database cache (delete content to force reindex)
 │   └── ...
 ├── nginx             # Contains nginx configuration, passwords and logs
@@ -93,9 +99,14 @@ shares/P2P/tools
 ├── ssl               # Contains certificates for nginx HTTPS access 
 │   └── ...           # **GENERATE FILES .crt AND .key HERE**
 └── transmission      # Contains Transmission configuration, cache and logs
-    ├── settings.json # Transmission configuration file (do not modify, overwritten by transmission-openvpn)
-    └── ...
+    ├── settings.json # Transmission configuration file (do not modify, overwritten by
+    └── ...           #   transmission-openvpn)
 ```
+
+See `docker-compose.yml` configuration: adapt it to your own environment.
+
+#### Directory structure on container-side
+For storage (photos, videos, TV shows, movies, music, torrents):
 
 ```bash
 storage
@@ -111,17 +122,34 @@ storage
 ├── complete        # Downloaded torrents by Transmission, published with MiniDLNA
 │   ├── couchpotato # Downloaded torrents by Transmission, managed by CouchPotato
 │   ├── medusa      # Downloaded torrents by Transmission, managed by Medusa
-│   └── seed        # Seeding torrents by Transmission
-├── incomplete      # Currently downloading torrents by Transmission
-├── watch           # Watch directory for *.torrent files
-├── resilio         # Watch directory for *.torrent files
-│   ├── downloads   # Resilio downloads directory
-│   └── sync        # Resilio sync directory
+│   └── seed        # Seeding torrents, managed by Transmission
+├── incomplete      # Currently downloading torrents, managed by Transmission (currently disabled)
+├── watch           # Watch directory for *.torrent files, consumed by Transmission
 ├── ...
-├── Backup          # Old personal photos & videos, published with MiniDLNA
+├── Backup          # Old personal photos & videos and published with MiniDLNA
+│   ├── pyphotorg   # Backup photos & videos and logs, managed by Pyphotorg (backup for
+│   └── ...         #   deduplicate operation)
 ├── Films           # Movies on NAS, managed by CouchPotato and published with MiniDLNA
 ├── MP3             # Music on NAS, published with MiniDLNA
-├── Photos          # Personal photos & videos to publish with MiniDLNA
+├── Photos          # Personal photos & videos, managed by Pyphotorg (dir for deduplicate
+|   |               #   operation) and published with MiniDLNA
+|   ├── Mobile XXX  # Organized photos & videos from smartphone XXX, managed by Pyphotorg (target
+|   |               #   for move/organize operation from '/sync/backup-XXX')
+|   ├── Mobile ...  # Other smartphone dirs, managed by Pyphotorg
+│   └── ...
 ├── Series          # TV shows on NAS, managed by Medusa and published with MiniDLNA
 └── Videos          # Misc videos on NAS, published with MiniDLNA
+
+(resilio)           # No prefix for Resilio storage dirs (/downloads, /sync)
+├── downloads       # Downloads directory, managed by Resilio
+└── sync            # Sync directory, managed by Resilio (target for sync from smartphone) and by
+    |               #   Pyphotorg (source for move/organize operation)
+    ├── backup-XXX  # Photos & videos backed-up from smartphone XXX, managed by Pyphotorg
+    |               #   (source for move/organize operation to '/storage/Photos/Mobile XXX')
+    ├── backup-...  # Other smartphone dirs, managed by Pyphotorg
+    └── ...
 ```
+
+See `docker-compose.yml` configuration: adapt it to your own environment.
+
+**WARNING : the mapped host-side directories must exist before starting containers, with correct read/write access (see UID/GID).**

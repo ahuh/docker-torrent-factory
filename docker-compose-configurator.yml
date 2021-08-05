@@ -4,7 +4,7 @@ services:
   
   # ==========================================================================
   # Configurator service for torrent factory
-  # => initialize or update config files for other services (Medusa, CouchPotato, nginx)
+  # => initialize or update config files for other services (MiniDLNA, Medusa, CouchPotato, nginx)
   # => must be executed on-demand before starting other services
   configurator:
     build: ./configurator

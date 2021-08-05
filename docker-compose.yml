@@ -25,9 +25,9 @@ services:
     environment:
       - CREATE_TUN_DEVICE=true
       # OpenVPN settings
-      - OPENVPN_PROVIDER=PIA
+      - OPENVPN_PROVIDER=surfshark
       # OPENVPN_CONFIG: comma separated list allowed, with random selection at startup
-      - OPENVPN_CONFIG=france
+      - OPENVPN_CONFIG=fr-par_udp
       - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60
       # OpenVPN credentials to connect to VPN (credentials stored in .env file)
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
@@ -44,8 +44,8 @@ services:
       - TRANSMISSION_DOWNLOAD_QUEUE_SIZE=50
       - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
       - TRANSMISSION_SPEED_LIMIT_UP=50
-      # Transmission Web UI: kettu, combustion, transmission-web-control
-      - TRANSMISSION_WEB_UI=transmission-web-control
+      # Transmission Web UI: kettu, combustion, transmission-web-control, flood-for-transmission
+      - TRANSMISSION_WEB_UI=flood-for-transmission
       # Enable HTTP proxy
       - WEBPROXY_ENABLED=true
       - WEBPROXY_PORT=8789
@@ -221,4 +221,45 @@ services:
       # Resilio Web UI port
       - 8888:8888
       - 55555:55555
+    restart: always
+
+  # ==========================================================================
+  # pyphotorg
+  pyphotorg:
+    image: ahuh/pyphotorg:latest
+    container_name: pyphotorg
+    environment:
+      # Operation switches
+      - ENABLE_ORGANIZE=true
+      - ENABLE_DEDUPLICATE=true
+      # Dry-run mode (no modification applied) or real mode
+      - DRY_RUN_MODE=false
+      # Job scheduler (cron format)
+      - "SCHEDULE_CRON=15 2 * * sun"
+      # Deduplicator - Dirs and priority orders for duplicate removal (remove duplicates from highest to lowest number)
+      - "DEDUP_STORAGE_PATH=/storage/Photos"
+      - "DEDUP_BACKUP_PATH=/storage/Backup/pyphotorg"
+      - "DEDUP_DIR_ORDER_01=/storage/Photos/Famille"
+      - "DEDUP_DIR_ORDER_02=/storage/Photos/Amis"
+      - "DEDUP_DIR_ORDER_03=/storage/Photos/Mobile Olivia"
+      - "DEDUP_DIR_ORDER_04=/storage/Photos/Mobile Julien"
+      # Organizer - Path couples: sync dirs (source) and storage dirs (target)
+      - "ORG_INCOMING_PATH_01=/sync/backup-osiris"
+      - "ORG_STORAGE_PATH_01=/storage/Photos/Mobile Julien"
+      - "ORG_INCOMING_PATH_02=/sync/backup-olivia"
+      - "ORG_STORAGE_PATH_02=/storage/Photos/Mobile Olivia"
+      # Organizer parameters
+      - ORG_TIMESTAMP_TAGS=FileModifyDate,CreationDate,CreateDate,DateTimeOriginal
+      - ORG_STORAGE_PATH_PATTERN=%Y/%Y-%m/%Y%m%d_%H%M%S%%-3c.%%e
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=500
+      - PGID=1000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # Sync dir
+      - /shares/P2P/resilio/sync:/sync
+      # Storage dir
+      - /shares/Perso/Photos:/storage/Photos
+      # Backup dir
+      - /shares/Public/Backup/pyphotorg:/storage/Backup/pyphotorg
     restart: always
