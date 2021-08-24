@@ -81,7 +81,7 @@ services:
   # Medusa service
   # => TV shows manager and auto-downloader, connected to torrent server
   medusa:
-    image: linuxserver/medusa:latest
+    image: ghcr.io/linuxserver/medusa:latest
     container_name: medusa
     dns:
       # Public DNS
@@ -109,7 +109,7 @@ services:
   # CouchPotato service
   # => Movies manager and auto-downloader, connected to torrent server
   couchpotato:
-    image: linuxserver/couchpotato:latest
+    image: ghcr.io/linuxserver/couchpotato:latest
     container_name: couchpotato
     dns:
       # Public DNS
@@ -199,7 +199,7 @@ services:
   # ==========================================================================
   # Resilio
   resilio:
-    image: linuxserver/resilio-sync:latest
+    image: ghcr.io/linuxserver/resilio-sync:latest
     container_name: resilio
     dns:
       # Public DNS
@@ -252,8 +252,8 @@ services:
       - ORG_TIMESTAMP_TAGS=FileModifyDate,CreationDate,CreateDate,DateTimeOriginal
       - ORG_STORAGE_PATH_PATTERN=%Y/%Y-%m/%Y%m%d_%H%M%S%%-3c.%%e
       # User from docker host to impersonate in container (configured in .env file)
-      - PUID=500
-      - PGID=1000
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       # Sync dir
