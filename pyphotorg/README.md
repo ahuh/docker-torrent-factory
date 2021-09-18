@@ -132,14 +132,25 @@ In addition to the scheduled jobs, each operation may be launched manually. Thes
   ```
 Each script has a command-line help available with arg `-h`, explaining how to set parameters.
 
+You may also execute the scheduled job manually:
+```
+$ ./scripts/execPy.sh /work/manual_job.py
+```
+
 ### Build and push image
 
-Build :
+Build (for current arch):
 ```bash
 $ ./docker-build.sh
 ```
 
-Push :
+Push (for current arch):
 ```bash
 $ ./docker-push.sh
 ```
+
+Or with buildx (build & push multiarch):
+```bash
+$ ./docker-buildx.sh
+```
+WARNING: for Windows environment, do not execute buildx in Windows but directly in WSL 2
