@@ -3,11 +3,11 @@ version: "3.3"
 services:
   
   # ==========================================================================
-  # Configurator service for torrent factory
-  # => initialize or update config files for other services (MiniDLNA, Medusa, CouchPotato, nginx)
+  # Configurator service for docker torrent factory
+  # => initialize or update config files for other services (MiniDLNA, Medusa, Transmission-OpenVPN, CouchPotato, nginx)
   # => must be executed on-demand before starting other services
   configurator:
-    build: ./configurator
+    image: ahuh/dtf-configurator:latest
     container_name: configurator
 
     environment:
@@ -20,8 +20,7 @@ services:
       - MEDUSA_TORRENT_SEED_DIR=/storage/complete/seed
       # • Storage dirs for TV shows : MEDUSA_TVSHOWS_MAIN_DIR required, add MEDUSA_TVSHOWS_DIR_* vars for additional dirs
       - MEDUSA_TVSHOWS_MAIN_DIR=/storage/Series      
-      - MEDUSA_TVSHOWS_DIR_2=/storage/_hd1/Series
-      - MEDUSA_TVSHOWS_DIR_3=/storage/_hd1/Enfants/Series
+      - MEDUSA_TVSHOWS_DIR_2=/storage/Enfants/Series
       # _______________________________________________________________
       # CouchPotato config
       # • Use HTTP proxy for torrent search (true / false)
@@ -29,9 +28,8 @@ services:
       # • Torrent dirs
       - COUCHPOTATO_TORRENT_DOWNLOAD_DIR=/storage/complete/couchpotato
       # • Storage dirs for movies : COUCHPOTATO_MOVIES_MAIN_DIR required (target download dir), add COUCHPOTATO_MOVIES_DIR_* vars for additional dirs
-      - COUCHPOTATO_MOVIES_MAIN_DIR=/storage/_hd1/Films
-      - COUCHPOTATO_MOVIES_DIR_2=/storage/_hd1/Enfants/Films
-      - COUCHPOTATO_MOVIES_DIR_3=/storage/Films
+      - COUCHPOTATO_MOVIES_MAIN_DIR=/storage/Films
+      - COUCHPOTATO_MOVIES_DIR_2=/storage/Enfants/Films
       # _______________________________________________________________
       # nginx config (credentials stored in .env file)
       - NGINX_USERNAME=${NGINX_USERNAME}
@@ -45,6 +43,6 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Storage dirs
-      - /shares/P2P/tools:/config
+      - /share/Download/tools:/config
     
     restart: "no"

@@ -5,14 +5,15 @@ import time
 import duplicates
 import pandas as pd
 
-def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dry_run_mode: bool = False):
+def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None, dry_run_mode: bool = False):
     """Deduplicate files in 'dedup_dir_path', and move them in 'backup_dir_path'
     """
 
     df = build_duplicate_df(
         dedup_dir_path=dedup_dir_path,
         backup_dir_path=backup_dir_path,
-        dir_order_list=dir_order_list
+        dir_order_list=dir_order_list,
+        dir_path_filter=dir_path_filter
     )
 
     if not df.empty:
@@ -23,7 +24,7 @@ def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[
             dry_run_mode=dry_run_mode
         )
 
-def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str]) -> pd.DataFrame:
+def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None) -> pd.DataFrame:
     """List duplicate files in 'dedup_dir_path', based on filesize (must be the same) and hash (must be the same)
     - Build a dataframe with 'file' column (full path) and 'duplicate' column (True for files marked for removal)
     - Order algorithm applied to keep only best file for each duplicate set: prioritize dirs from 'dir_order_list', then first dirs in alphabetic path order, then filename length (keep shortest)
@@ -35,9 +36,17 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
     with common.IgnoreStdout():
         df = duplicates.list_all_duplicates(dedup_dir_path, fastscan=True)
 
+    if (dir_order_list is None):
+            # Default dir order list if none
+            dir_order_list = ['/']
+
+    if ((not df.empty) and (dir_path_filter is not None)):
+        # Do not process files containing path filter
+        df = df[~df['file'].str.contains(dir_path_filter)]
+
     if df.empty:
         print("... No duplicate to remove !")
-    else: 
+    else:
         # Add a dir path column extracted from 'file' column with full path
         df['dirpath'] = df.apply(lambda x: os.path.dirname(x['file']), axis=1)
 

@@ -1,15 +1,15 @@
 version: "3.3"
 
-volumes:
+#volumes:
 
-  # External HD #1
+  # Configuration example for External HD #1
   # (credentials stored in .env file)
-  external-hd1:
-    driver: local
-    driver_opts:
-      type: cifs
-      o: username=${EXTERNAL_HD1_USERNAME},password=${EXTERNAL_HD1_PASSWORD},uid=${USER_PUID},gid=${USER_PGID},iocharset=utf8,file_mode=0777,dir_mode=0777
-      device: "//192.168.0.254/Seagate-2To"
+  #external-hd1:
+  #  driver: local
+  #  driver_opts:
+  #    type: cifs
+  #    o: username=${EXTERNAL_HD1_USERNAME},password=${EXTERNAL_HD1_PASSWORD},uid=${USER_PUID},gid=${USER_PGID},iocharset=utf8,file_mode=0777,dir_mode=0777
+  #    device: "${EXTERNAL_HD1_PATH}"
 
 services:
 
@@ -43,7 +43,7 @@ services:
       - TRANSMISSION_DOWNLOAD_QUEUE_ENABLED=true
       - TRANSMISSION_DOWNLOAD_QUEUE_SIZE=50
       - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
-      - TRANSMISSION_SPEED_LIMIT_UP=50
+      - TRANSMISSION_SPEED_LIMIT_UP=1000
       # Transmission Web UI: kettu, combustion, transmission-web-control, flood-for-transmission
       - TRANSMISSION_WEB_UI=flood-for-transmission
       # Enable HTTP proxy
@@ -65,17 +65,37 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration dir
-      - /shares/P2P/tools/transmission:/data/transmission-home
+      - /share/Download/tools/transmission:/data/transmission-home
       # Storage dirs
-      - /shares/P2P/incomplete:/storage/incomplete
-      - /shares/P2P/complete:/storage/complete
-      - /shares/P2P/watch:/storage/watch
+      - /share/Download/incomplete:/storage/incomplete
+      - /share/Download/complete:/storage/complete
+      - /share/Download/watch:/storage/watch
     ports:
       # Transmission Web UI port
       - 9091:9091
       # HTTP Proxy port
       - 8789:8789
+      # JOAL Web UI Port
+      - 9092:9092
     restart: always
+
+  # ==========================================================================
+  # JOAL service
+  # => Ratio Master clone with web UI to boost torrent seed ratio
+  joal:
+    image: anthonyraymond/joal:latest
+    container_name: joal
+    depends_on:
+      - transmission-openvpn
+    volumes:
+      # Configuration dir
+      - /share/Download/tools/joal:/data
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
+    # User from docker host to impersonate in container (configured in .env file)
+    user: "${USER_PUID}:${USER_PGID}"
+    restart: always
+    command: "--joal-conf=/data --spring.main.web-environment=true --server.port=9092 --joal.ui.path.prefix=${JOAL_PATH_PREFIX} --joal.ui.secret-token=${JOAL_SECRET_TOKEN}"
 
   # ==========================================================================
   # Medusa service
@@ -95,11 +115,11 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration dir
-      - /shares/P2P/tools/medusa:/config
+      - /share/Download/tools/medusa:/config
       # Storage dirs
-      - /shares/P2P/complete/medusa:/storage/complete/medusa
-      - /shares/Data/Series:/storage/Series
-      - external-hd1:/storage/_hd1
+      - /share/Download/complete/medusa:/storage/complete/medusa
+      - /share/Multimedia/Series:/storage/Series
+      #- external-hd1:/storage/_hd1
     ports:
       # Medusa Web UI port
       - 8081:8081
@@ -123,14 +143,14 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration dir
-      - /shares/P2P/tools/couchpotato:/config
+      - /share/Download/tools/couchpotato:/config
       # Storage dirs
-      - /shares/P2P/complete/couchpotato:/storage/complete/couchpotato
-      - /shares/Data/Films:/storage/Films
-      - external-hd1:/storage/_hd1
+      - /share/Download/complete/couchpotato:/storage/complete/couchpotato
+      - /share/Multimedia/Films:/storage/Films
+      #- external-hd1:/storage/_hd1
     ports:
       # CouchPotato Web UI port
-      - 5050:5050
+      - 5051:5051
     restart: always
   
   # ==========================================================================
@@ -147,17 +167,17 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration file
-      - /shares/P2P/tools/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /share/Download/tools/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       # Password file (use 'configurator' docker container to generate)
-      - /shares/P2P/tools/nginx/passwords:/etc/nginx/passwords:ro
+      - /share/Download/tools/nginx/passwords:/etc/nginx/passwords:ro
       # Logs dir
-      - /shares/P2P/tools/nginx/logs:/var/log/nginx
+      - /share/Download/tools/nginx/logs:/var/log/nginx
       # SSL certificates
-      - /shares/P2P/tools/ssl/ahuh.crt:/etc/nginx/certs/ssl.crt:ro
-      - /shares/P2P/tools/ssl/ahuh.key:/etc/nginx/certs/ssl.key:ro
+      - /share/Download/tools/ssl/ahuh.crt:/etc/nginx/certs/ssl.crt:ro
+      - /share/Download/tools/ssl/ahuh.key:/etc/nginx/certs/ssl.key:ro
     ports:
       # CouchPotato external port
-      - 44450:44450
+      - 44451:44451
       # Medusa external port
       - 44481:44481
       # Transmission external port      
@@ -175,7 +195,7 @@ services:
     network_mode: "host"
     environment:
       # MiniDLNA settings
-      - MINIDLNA_FRIENDLY_NAME=ahuh-nas
+      - MINIDLNA_FRIENDLY_NAME=ahuh-qnas-mini
       - MINIDLNA_MEDIA_DIR=/storage
       # User from docker host to impersonate in container (configured in .env file)
       - PUID=${USER_PUID}
@@ -184,47 +204,24 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration dir
-      - /shares/P2P/tools/minidlna:/minidlna
+      - /share/Download/tools/minidlna:/minidlna
       # Storage dirs
-      - /shares/P2P/complete:/storage/complete:ro
-      - /shares/Public/Backup:/storage/Backup:ro
-      - /shares/Perso/Photos:/storage/Photos:ro
-      - /shares/Perso/Videos:/storage/Videos:ro
-      - /shares/Data/MP3:/storage/MP3:ro
-      - /shares/Data/Series:/storage/Series:ro
-      - /shares/Data/Films:/storage/Films:ro
+      - /share/Download/complete:/storage/complete:ro
+      - /share/Perso/Backup:/storage/Backup:ro
+      - /share/Perso/Photos:/storage/Photos:ro
+      - /share/Perso/Videos:/storage/Videos:ro
+      - /share/Multimedia/Films:/storage/Films:ro
+      - /share/Multimedia/MP3:/storage/MP3:ro
+      - /share/Multimedia/Series:/storage/Series:ro
+      - /share/Multimedia/Enfants/Films:/storage/Enfants/Films:ro
+      - /share/Multimedia/Enfants/Series:/storage/Enfants/Series:ro
+      - /share/Multimedia/Enfants/Videos:/storage/Enfants/Videos:ro
       #- external-hd1:/storage/_hd1:ro
     restart: always
 
   # ==========================================================================
-  # Resilio
-  resilio:
-    image: ghcr.io/linuxserver/resilio-sync:latest
-    container_name: resilio
-    dns:
-      # Public DNS
-      - 8.8.8.8
-      - 8.8.4.4
-    environment:
-      # User from docker host to impersonate in container (configured in .env file)
-      - PUID=${USER_PUID}
-      - PGID=${USER_PGID}
-    volumes:
-      # Sync time with docker host
-      - /etc/localtime:/etc/localtime:ro
-      # Configuration dir
-      - /shares/P2P/tools/resilio:/config
-      # Storage dirs
-      - /shares/P2P/resilio/downloads:/downloads
-      - /shares/P2P/resilio/sync:/sync
-    ports:
-      # Resilio Web UI port
-      - 8888:8888
-      - 55555:55555
-    restart: always
-
-  # ==========================================================================
-  # pyphotorg
+  # pyphotorg service
+  # => Photo organizer and deduplicator, used to manage photos / videos on the NAS
   pyphotorg:
     image: ahuh/pyphotorg:latest
     container_name: pyphotorg
@@ -243,10 +240,11 @@ services:
       - "DEDUP_DIR_ORDER_02=/storage/Photos/Amis"
       - "DEDUP_DIR_ORDER_03=/storage/Photos/Mobile Olivia"
       - "DEDUP_DIR_ORDER_04=/storage/Photos/Mobile Julien"
+      - "DEDUP_DIR_PATH_FILTER=/.@__thumb"
       # Organizer - Path couples: sync dirs (source) and storage dirs (target)
-      - "ORG_INCOMING_PATH_01=/sync/backup-osiris"
+      - "ORG_INCOMING_PATH_01=/storage/sync/camera-osiris"
       - "ORG_STORAGE_PATH_01=/storage/Photos/Mobile Julien"
-      - "ORG_INCOMING_PATH_02=/sync/backup-olivia"
+      - "ORG_INCOMING_PATH_02=/storage/sync/camera-olivia"
       - "ORG_STORAGE_PATH_02=/storage/Photos/Mobile Olivia"
       # Organizer parameters
       - ORG_TIMESTAMP_TAGS=FileModifyDate,CreationDate,CreateDate,DateTimeOriginal
@@ -257,9 +255,9 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       # Sync dir
-      - /shares/P2P/resilio/sync:/sync
+      - /share/homes/ahuh/.Qsync:/storage/sync
       # Storage dir
-      - /shares/Perso/Photos:/storage/Photos
+      - /share/Perso/Photos:/storage/Photos
       # Backup dir
-      - /shares/Public/Backup/pyphotorg:/storage/Backup/pyphotorg
+      - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
     restart: always

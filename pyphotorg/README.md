@@ -1,5 +1,5 @@
 # Pyphotorg
-Docker image hosting a photo / video organizer and deduplicator implemented in Python 3, for ARMv7 devices.
+Docker image hosting a photo / video organizer and deduplicator implemented in Python 3, for ARM / x86 / x64 devices.
 * Github link: https://github.com/ahuh/docker-torrent-factory/tree/master/pyphotorg
 * Dockerhub link: https://hub.docker.com/r/ahuh/pyphotorg
 
@@ -64,25 +64,26 @@ services:
       - "DEDUP_DIR_ORDER_02=/storage/Photos/Friends"
       - "DEDUP_DIR_ORDER_03=/storage/Photos/Mobile-A"
       - "DEDUP_DIR_ORDER_04=/storage/Photos/Mobile-B"
+      - "DEDUP_DIR_PATH_FILTER=/.@__thumb"
       # Organizer - Path couples: sync dirs (source) and storage dirs (target)
-      - "ORG_INCOMING_PATH_01=/sync/backup-mobile-a"
+      - "ORG_INCOMING_PATH_01=/storage/sync/camera-a"
       - "ORG_STORAGE_PATH_01=/storage/Photos/Mobile-A"
-      - "ORG_INCOMING_PATH_02=/sync/backup-mobile-b"
+      - "ORG_INCOMING_PATH_02=/storage/sync/camera-b"
       - "ORG_STORAGE_PATH_02=/storage/Photos/Mobile-B"
       # Organizer parameters
       - ORG_TIMESTAMP_TAGS=FileModifyDate,CreationDate,CreateDate,DateTimeOriginal
       - ORG_STORAGE_PATH_PATTERN=%Y/%Y-%m/%Y%m%d_%H%M%S%%-3c.%%e
-      # User from docker host to impersonate in container (configured in .env file)
+      # User from docker host to impersonate in container
       - PUID=500
       - PGID=1000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       # Sync dir
-      - /shares/P2P/resilio/sync:/sync
+      - /share/homes/XXX/.Qsync:/storage/sync
       # Storage dir
-      - /shares/Perso/Photos:/storage/Photos
+      - /share/Perso/Photos:/storage/Photos
       # Backup dir
-      - /shares/Public/Backup/pyphotorg:/storage/Backup/pyphotorg
+      - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
     restart: always
 ```
 
@@ -110,7 +111,8 @@ DRY_RUN_MODE             | `false` | In dry-run mode, photo / video files are no
 SCHEDULE_CRON            | `0 2 * * sun` | Schedule for job execution in format `min hour day_of_month month day_of_week`. See http://en.wikipedia.org/wiki/Cron for details
 DEDUP_STORAGE_PATH       | | Storage directory containing photo / videos files to process, during deduplication operation
 DEDUP_BACKUP_PATH        | | Backup directory to use, during deduplication operation. Each duplicate file removed is backed-up in this directory (with the same directory structure as the original). An Excel report is alse generated here at each execution (if duplicate files detected)
-DEDUP_DIR_ORDER_XX       | | Multiple variables supported (XX=01, 02, etc). Directory priority orders for duplicate removal (remove duplicates from highest to lowest number)
+DEDUP_DIR_ORDER_XX       | | OPTIONAL - Multiple variables supported (XX=01, 02, etc). Directory priority orders for duplicate removal (remove duplicates from highest to lowest number)
+DEDUP_DIR_PATH_FILTER    | | OPTIONAL - Directories containing this string are filtered to prevent deduplication. E.g. "/.@__thumb" for QNAP NAS thumbnails generated automatically
 ORG_INCOMING_PATH_XX     | | Multiple variables supported (XX=01, 02, etc). List of incoming directory (source) for move / organize operation. Each value is coupled with the corresponding storage directory value (same XX index). If no variable used: the storage dir is used as source and target ('in-place' organize)
 ORG_STORAGE_PATH_XX      | | Multiple variables supported (XX=01, 02, etc). List of storage directory (target) for move / organize operation. Each value is coupled with the corresponding incoming directory value (same XX index)
 ORG_TIMESTAMP_TAGS       | `FileModifyDate,CreationDate,`<br />`CreateDate,DateTimeOriginal` | List of metadata to use in reverse order of priority for path / filename insertion, during move / organize operation. See documentation here: https://exiftool.org/filename.html#ex12

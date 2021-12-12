@@ -5,6 +5,11 @@
 
 # ========================================================================
 # Variables
+JOAL_TMP_DIR=/tmp/joal/clients
+JOAL_CONFIG_DIR=/config/joal
+JOAL_TORRENTS_DIR=${JOAL_CONFIG_DIR}/torrents
+JOAL_CLIENTS_DIR=${JOAL_CONFIG_DIR}/clients
+JOAL_CONFIG_FILE=${JOAL_CONFIG_DIR}/config.json
 MEDUSA_CONFIG_DIR=/config/medusa
 MEDUSA_CONFIG_FILE=${MEDUSA_CONFIG_DIR}/config.ini
 COUCHPOTATO_CONFIG_DIR=/config/couchpotato
@@ -20,6 +25,12 @@ TRANSMISSION_CONFIG_DIR=/config/transmission
 # ========================================================================
 echo "Creating / Updating configuration dirs ..."
 
+mkdir -p ${JOAL_CONFIG_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JOAL_CONFIG_DIR}
+mkdir -p ${JOAL_TORRENTS_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JOAL_TORRENTS_DIR}
+cp -r ${JOAL_TMP_DIR} ${JOAL_CLIENTS_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JOAL_CLIENTS_DIR}
 mkdir -p ${MEDUSA_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${MEDUSA_CONFIG_DIR}
 mkdir -p ${COUCHPOTATO_CONFIG_DIR}
@@ -34,6 +45,17 @@ mkdir -p ${SSL_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${SSL_CONFIG_DIR}
 mkdir -p ${TRANSMISSION_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${TRANSMISSION_CONFIG_DIR}
+
+echo "... DONE !"
+echo ""
+
+# ========================================================================
+echo "Creating / Updating JOAL configuration file ..."
+
+# Configure file
+touch ${JOAL_CONFIG_FILE}
+chown ${RUN_AS}:${RUN_AS} ${JOAL_CONFIG_FILE}
+cat /resources/config.json > ${JOAL_CONFIG_FILE}
 
 echo "... DONE !"
 echo ""
@@ -104,6 +126,7 @@ else
 	crudini --set ${COUCHPOTATO_CONFIG_FILE} core use_proxy 0
 	crudini --del ${COUCHPOTATO_CONFIG_FILE} core proxy_server
 fi
+crudini --set ${COUCHPOTATO_CONFIG_FILE} core port 5051
 crudini --set ${COUCHPOTATO_CONFIG_FILE} manage enabled 1
 crudini --set ${COUCHPOTATO_CONFIG_FILE} manage library "${COUCHPOTATO_MOVIES_DIR_CONCAT}"
 crudini --set ${COUCHPOTATO_CONFIG_FILE} renamer enabled 1

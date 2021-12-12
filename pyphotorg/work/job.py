@@ -23,5 +23,6 @@ def job():
             dedup_dir_path=os.getenv("DEDUP_STORAGE_PATH"),
             backup_dir_path=os.getenv("DEDUP_BACKUP_PATH"),
             dir_order_list=common.load_envvars_list("DEDUP_DIR_ORDER"),
+            dir_path_filter=os.getenv("DEDUP_DIR_PATH_FILTER"),
             dry_run_mode=dry_run_mode
         )
