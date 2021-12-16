@@ -77,7 +77,7 @@ services:
       - 8789:8789
       # JOAL Web UI Port
       - 9092:9092
-    restart: always
+    restart: unless-stopped
 
   # ==========================================================================
   # JOAL service
@@ -94,14 +94,14 @@ services:
     network_mode: "service:transmission-openvpn"
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    restart: always
+    restart: unless-stopped
     command: "--joal-conf=/data --spring.main.web-environment=true --server.port=9092 --joal.ui.path.prefix=${JOAL_PATH_PREFIX} --joal.ui.secret-token=${JOAL_SECRET_TOKEN}"
 
   # ==========================================================================
   # Medusa service
   # => TV shows manager and auto-downloader, connected to torrent server
   medusa:
-    image: ghcr.io/linuxserver/medusa:latest
+    image: linuxserver/medusa:latest
     container_name: medusa
     dns:
       # Public DNS
@@ -119,18 +119,36 @@ services:
       # Storage dirs
       - /share/Download/complete/medusa:/storage/complete/medusa
       - /share/Multimedia/Series:/storage/Series
+      - /share/Multimedia/Enfants/Series:/storage/Enfants/Series
       #- external-hd1:/storage/_hd1
     ports:
       # Medusa Web UI port
       - 8081:8081
-    restart: always
+    restart: unless-stopped
 
   # ==========================================================================
-  # CouchPotato service
+  # Radarr service
   # => Movies manager and auto-downloader, connected to torrent server
-  couchpotato:
-    image: ghcr.io/linuxserver/couchpotato:latest
-    container_name: couchpotato
+  #
+  # ------------------------------------
+  # Manual configuration in Web UI:
+  # - Settings > Media Management > Root Folders:
+  #   [+] /storage/Films
+  #   [+] /storage/Enfants/Films
+  # - Settings > Download Clients > [+] Transmission:
+  #   - Host: transmission-openvpn
+  #   - Port: 9091
+  #   - Category: radarr
+  # - Settings > Indexers > choose your indexers to download torrents from ...
+  # - Settings > General > Proxy: if you want to use HTTP proxy to VPN tunnel
+  #   - Use Proxy: X
+  #   - Proxy Type: HTTP(S)
+  #   - Host: transmission-openvpn
+  #   - Port: 8789
+  # ------------------------------------
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
     dns:
       # Public DNS
       - 8.8.8.8
@@ -143,16 +161,71 @@ services:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
       # Configuration dir
-      - /share/Download/tools/couchpotato:/config
+      - /share/Download/tools/radarr:/config
       # Storage dirs
-      - /share/Download/complete/couchpotato:/storage/complete/couchpotato
+      - /share/Download/complete/radarr:/storage/complete/radarr
       - /share/Multimedia/Films:/storage/Films
+      - /share/Multimedia/Enfants/Films:/storage/Enfants/Films
       #- external-hd1:/storage/_hd1
     ports:
-      # CouchPotato Web UI port
-      - 5051:5051
-    restart: always
-  
+      # Radarr Web UI port
+      - 7878:7878
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Kodi MariaDB service
+  # => MariaDB for Kodi configuration sharing between devices
+  #
+  # ------------------------------------
+  # See tutorial for Kodi setup:
+  # https://kodi.wiki/view/MySQL/Setting_up_Kodi
+  #
+  # Use this configuration for '':
+  # <advancedsettings>
+  #   <videodatabase>
+  #     <name>kodi-video</type>
+  #     <type>mysql</type>
+  #     <host>***DEVICE HOSTNAME OR IP***</host>
+  #     <port>3636</port>
+  #     <user>${KODI_DB_USER}</user>
+  #     <pass>${KODI_DB_PASSWORD}</pass>
+  #   </videodatabase> 
+  #   <musicdatabase>
+  #     <name>kodi-music</type>
+  #     <type>mysql</type>
+  #     <host>***DEVICE HOSTNAME OR IP***</host>
+  #     <port>3636</port>
+  #     <user>${KODI_DB_USER}</user>
+  #     <pass>${KODI_DB_PASSWORD}</pass>
+  #   </musicdatabase>
+  #   <videolibrary>
+  #     <importwatchedstate>true</importwatchedstate>
+  #     <importresumepoint>true</importresumepoint>
+  #   </videolibrary>
+  # </advancedsettings>
+  # ------------------------------------
+  kodi-mariadb:
+    image: linuxserver/mariadb:latest
+    container_name: kodi-mariadb
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+      # Temporary MySQL DB name (deleted after initial install)
+      - MYSQL_DATABASE=tempdb
+      # MySQL root password (not used after initial install)
+      - MYSQL_ROOT_PASSWORD=${KODI_DB_ROOT_PASSWORD}
+      # MySQL user to configure in Kodi to connect to MySQL (Kodi creates databases automatically)
+      - MYSQL_USER=${KODI_DB_USER}
+      - MYSQL_PASSWORD=${KODI_DB_PASSWORD}
+    volumes:
+      # Configuration dir (must contain 'initdb.d/ini_kodi.sql' script for initial install)
+      - /share/Download/tools/kodi-mariadb:/config
+    ports:
+      # MariaDB port to configure in Kodi to connect to MySQL
+      - 3636:3306
+    restart: unless-stopped
+
   # ==========================================================================
   # nginx service
   # => Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication
@@ -176,15 +249,15 @@ services:
       - /share/Download/tools/ssl/ahuh.crt:/etc/nginx/certs/ssl.crt:ro
       - /share/Download/tools/ssl/ahuh.key:/etc/nginx/certs/ssl.key:ro
     ports:
-      # CouchPotato external port
-      - 44451:44451
+      # Radarr external port
+      - 44478:44478
       # Medusa external port
       - 44481:44481
       # Transmission external port      
       - 44491:44491
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    restart: always
+    restart: unless-stopped
 
   # ==========================================================================
   # MiniDLNA service
@@ -217,7 +290,7 @@ services:
       - /share/Multimedia/Enfants/Series:/storage/Enfants/Series:ro
       - /share/Multimedia/Enfants/Videos:/storage/Enfants/Videos:ro
       #- external-hd1:/storage/_hd1:ro
-    restart: always
+    restart: unless-stopped
 
   # ==========================================================================
   # pyphotorg service
@@ -260,4 +333,4 @@ services:
       - /share/Perso/Photos:/storage/Photos
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
-    restart: always
+    restart: unless-stopped

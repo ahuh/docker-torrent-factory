@@ -9,4 +9,5 @@ export COMPOSE_HTTP_TIMEOUT=600
 
 # - Pull new image from docker hub (update)
 # - Start container and wait until configuration finished
-docker-compose -p torrent-factory-configurator -f docker-compose-configurator.yml pull && docker-compose -p torrent-factory-configurator -f docker-compose-configurator.yml up
+# - Remove container at the end
+docker-compose -p torrent-factory-configurator -f docker-compose-configurator.yml pull && docker-compose -p torrent-factory-configurator -f docker-compose-configurator.yml up && docker-compose -p torrent-factory-configurator -f docker-compose-configurator.yml down

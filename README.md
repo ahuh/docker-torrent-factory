@@ -8,7 +8,7 @@ See GitHub repositories / Docker Hub images:
 | **Transmission-OpenVPN**<br />Torrent server secured by VPN connection | <ul><li>https://github.com/haugene/docker-transmission-openvpn</li><li>https://hub.docker.com/r/haugene/transmission-openvpn</li></ul>|
 | **JOAL**<br />Ratio Master clone with web UI to boost torrent seed ratio | <ul><li>https://github.com/anthonyraymond/joal</li><li>https://hub.docker.com/r/anthonyraymond/joal</li></ul>|
 | **Medusa**<br />TV shows manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-medusa</li><li>https://hub.docker.com/r/linuxserver/medusa</li></ul>|
-| **CouchPotato**<br />Movies manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-couchpotato</li><li>https://hub.docker.com/r/linuxserver/couchpotato</li></ul>|
+| **Radarr**<br />Movies manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/Radarr/Radarr</li><li>https://hub.docker.com/r/linuxserver/radarr</li></ul>|
 | **nginx**<br />Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication | <ul><li>https://github.com/nginxinc/docker-nginx</li><li>https://hub.docker.com/_/nginx</li></ul>|
 | **MiniDLNA**<br />UPnP / DLNA service, used to publish media files on the local network | <ul><li>https://github.com/vladgh/docker_base_images/tree/master/minidlna</li><li>https://hub.docker.com/r/vladgh/minidlna</li></ul>|
 | **Pyphotorg**<br />Photo organizer and deduplicator, used to manage photos / videos on the NAS | <ul><li>https://github.com/ahuh/docker-torrent-factory/tree/master/pyphotorg</li><li>https://hub.docker.com/r/ahuh/pyphotorg</li></ul>|
@@ -18,7 +18,7 @@ This repository contains a main `docker-compose.yml` file, configured to launch 
 ![Architecture of the Docker Torrent Factory](./resources/docker-torrent-factory.png)
 
 Other docker compose files are available :
-* The `docker-compose-configurator.yml` file is provided to deploy a **Configurator** service, that you may optionally use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service. Note that you still can configure each service with the dedicated web UI (Medusa, CouchPotato, etc) to do additional settings.
+* The `docker-compose-configurator.yml` file is provided to deploy a **Configurator** service, that you may optionally use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service (not possible for Radarr: must be manually configured in web UI). Note that you still can configure each service with the dedicated web UI (Medusa, Radarr, etc) to do additional settings.
 * The `docker-compose-portainer.yml` file is provided to deploy a **Portainer** service, that you may use to monitor and manager your docker environment with a web UI.
 
 ## 2) Features
@@ -85,17 +85,17 @@ The containers will run impersonated as this user, in order to have read/write a
 The configuration of all the containers are stored on volumes, mapped with the docker host.
 
 #### 4.2.1) Directory structure on host-side
-For tools configuration and logs (CouchPotato, JOAL, Medusa, MiniDLNA, nginx, Transmission):
+For tools configuration and logs (JOAL, Kodi MariaDB, Medusa, MiniDLNA, nginx, Radarr, Transmission):
 
 ```bash
 /share/Download/tools
-├── couchpotato       # Contains CouchPotato configuration, database, cache and logs
-│   ├── config.ini    # CouchPotato configuration file (use dtf-configurator to initialize, use Web
-│   └── ...           #   UI for setup)
 ├── joal              # Contains JOAL configuration files (use dtf-configurator to initialize)
 |   ├── config.json   # JOAL configuration file (use dtf-configurator to setup)
 │   ├── clients       # JOAL clients dir
 │   └── torrents      # JOAL torrents dir
+├── kodi-mariadb      # Kodi MariaDB configuration, database and logs
+│   └── initdb.d      # Initialization scripts dir (use dtf-configurator to setup)
+│       └── kodi.sql  # Kodi DB initialization script (use dtf-configurator to setup)
 ├── medusa            # Contains Medusa configuration, database, cache and logs
 │   ├── config.ini    # Medusa configuration file (use dtf-configurator to setup, use Web UI for full
 │   └── ...           #   setup)
@@ -105,6 +105,8 @@ For tools configuration and logs (CouchPotato, JOAL, Medusa, MiniDLNA, nginx, Tr
 │   ├── nginx.conf    # nginx configuration file (use dtf-configurator to setup)
 │   ├── passwords     # nginx credentials for basic authentication (use dtf-configurator to setup)
 │   └── logs          # nginx logs
+├── radarr            # Contains Radarr configuration, database, cache and logs
+│   └── ...           #   (do not modify, managed by Radarr with Wed UI)
 ├── ssl               # Contains certificates for nginx HTTPS access 
 │   └── ...           # **GENERATE FILES .crt AND .key HERE**
 └── transmission      # Contains Transmission configuration, cache and logs
@@ -120,8 +122,8 @@ For storage (photos, videos, TV shows, movies, music, torrents):
 ```bash
 storage
 ├── complete        # Downloaded torrents by Transmission, published with MiniDLNA
-│   ├── couchpotato # Downloaded torrents by Transmission, managed by CouchPotato
 │   ├── medusa      # Downloaded torrents by Transmission, managed by Medusa
+│   ├── radarr      # Downloaded torrents by Transmission, managed by Radarr
 │   └── seed        # Seeding torrents, managed by Transmission
 ├── incomplete      # Currently downloading torrents, managed by Transmission (currently disabled)
 ├── watch           # Watch directory for *.torrent files, consumed by Transmission
@@ -142,10 +144,10 @@ storage
 |   ├── camera-...  # Other smartphone dirs, managed by Pyphotorg
 |   └── ...
 ├── Enfants         # Children videos
-│   ├── Films       # Children movies on NAS, managed by CouchPotato and published with MiniDLNA
+│   ├── Films       # Children movies on NAS, managed by Radarr and published with MiniDLNA
 │   ├── Series      # Children TV shows on NAS, managed by Medusa and published with MiniDLNA
 │   └── ...
-├── Films           # Movies on NAS, managed by CouchPotato and published with MiniDLNA
+├── Films           # Movies on NAS, managed by Radarr and published with MiniDLNA
 ├── MP3             # Music on NAS, published with MiniDLNA
 ├── Series          # TV shows on NAS, managed by Medusa and published with MiniDLNA
 └── Videos          # Misc videos on NAS, published with MiniDLNA

@@ -12,13 +12,15 @@ JOAL_CLIENTS_DIR=${JOAL_CONFIG_DIR}/clients
 JOAL_CONFIG_FILE=${JOAL_CONFIG_DIR}/config.json
 MEDUSA_CONFIG_DIR=/config/medusa
 MEDUSA_CONFIG_FILE=${MEDUSA_CONFIG_DIR}/config.ini
-COUCHPOTATO_CONFIG_DIR=/config/couchpotato
-COUCHPOTATO_CONFIG_FILE=${COUCHPOTATO_CONFIG_DIR}/config.ini
+KODI_MARIADB_CONFIG_DIR=/config/kodi-mariadb
+KODI_MARIADB_CONFIG_INITDB_DIR=${KODI_MARIADB_CONFIG_DIR}/initdb.d
+KODI_MARIADB_CONFIG_FILE=${KODI_MARIADB_CONFIG_INITDB_DIR}/kodi.sql
 NGINX_CONFIG_DIR=/config/nginx
 NGINX_CONFIG_FILE=${NGINX_CONFIG_DIR}/nginx.conf
 NGINX_HTPASSWD_FILE=${NGINX_CONFIG_DIR}/passwords
 NGINX_LOGS_DIR=/config/nginx/logs
 MINIDLNA_CONFIG_DIR=/config/minidlna
+RADARR_CONFIG_DIR=/config/radarr
 SSL_CONFIG_DIR=/config/ssl
 TRANSMISSION_CONFIG_DIR=/config/transmission
 
@@ -33,8 +35,12 @@ cp -r ${JOAL_TMP_DIR} ${JOAL_CLIENTS_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${JOAL_CLIENTS_DIR}
 mkdir -p ${MEDUSA_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${MEDUSA_CONFIG_DIR}
-mkdir -p ${COUCHPOTATO_CONFIG_DIR}
-chown -R ${RUN_AS}:${RUN_AS} ${COUCHPOTATO_CONFIG_DIR}
+mkdir -p ${RADARR_CONFIG_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${RADARR_CONFIG_DIR}
+mkdir -p ${KODI_MARIADB_CONFIG_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${KODI_MARIADB_CONFIG_DIR}
+mkdir -p ${KODI_MARIADB_CONFIG_INITDB_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${KODI_MARIADB_CONFIG_INITDB_DIR}
 mkdir -p ${NGINX_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${NGINX_CONFIG_DIR}
 mkdir -p ${NGINX_LOGS_DIR}
@@ -56,6 +62,17 @@ echo "Creating / Updating JOAL configuration file ..."
 touch ${JOAL_CONFIG_FILE}
 chown ${RUN_AS}:${RUN_AS} ${JOAL_CONFIG_FILE}
 cat /resources/config.json > ${JOAL_CONFIG_FILE}
+
+echo "... DONE !"
+echo ""
+
+# ========================================================================
+echo "Creating / Updating Kodi MariaDB configuration file ..."
+
+# Configure file
+touch ${KODI_MARIADB_CONFIG_FILE}
+chown ${RUN_AS}:${RUN_AS} ${KODI_MARIADB_CONFIG_FILE}
+cat /resources/kodi.sql > ${KODI_MARIADB_CONFIG_FILE}
 
 echo "... DONE !"
 echo ""
@@ -84,7 +101,7 @@ crudini --set ${MEDUSA_CONFIG_FILE} General process_automatically 1
 if [ "${MEDUSA_USE_HTTP_PROXY}" = true ] ; then
 	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_indexers 1
 	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_setting "http://transmission-openvpn:8789"
-else	
+else
 	crudini --set ${MEDUSA_CONFIG_FILE} General proxy_indexers 0
 	crudini --del ${MEDUSA_CONFIG_FILE} General proxy_setting
 fi
@@ -97,48 +114,6 @@ crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_host "http://transmission-op
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_path "${MEDUSA_TORRENT_DOWNLOAD_DIR}"
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_rpcurl transmission
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_seed_location "${MEDUSA_TORRENT_SEED_DIR}"
-
-echo "... DONE !"
-echo ""
-
-# ========================================================================
-echo "Creating / Updating CouchPotato configuration file ..."
-
-# Concat movies dirs
-COUCHPOTATO_MOVIES_DIR_CONCAT=${COUCHPOTATO_MOVIES_MAIN_DIR}
-for VAR in $(env); do
-	if [[ "$VAR" =~ ^COUCHPOTATO_MOVIES_DIR_ ]]; then
-		VAR_VALUE=$(echo "$VAR" | sed -r "s/.*=(.*)/\\1/g")
-		COUCHPOTATO_MOVIES_DIR_CONCAT="${COUCHPOTATO_MOVIES_DIR_CONCAT}::${VAR_VALUE}"
-	fi
-done
-
-# Create config file if not exists
-touch ${COUCHPOTATO_CONFIG_FILE}
-chown ${RUN_AS}:${RUN_AS} ${COUCHPOTATO_CONFIG_FILE}
-
-# Configure file
-# - General section
-if [ "${COUCHPOTATO_USE_HTTP_PROXY}" = true ] ; then
-	crudini --set ${COUCHPOTATO_CONFIG_FILE} core use_proxy 1
-	crudini --set ${COUCHPOTATO_CONFIG_FILE} core proxy_server "transmission-openvpn:8789"
-else
-	crudini --set ${COUCHPOTATO_CONFIG_FILE} core use_proxy 0
-	crudini --del ${COUCHPOTATO_CONFIG_FILE} core proxy_server
-fi
-crudini --set ${COUCHPOTATO_CONFIG_FILE} core port 5051
-crudini --set ${COUCHPOTATO_CONFIG_FILE} manage enabled 1
-crudini --set ${COUCHPOTATO_CONFIG_FILE} manage library "${COUCHPOTATO_MOVIES_DIR_CONCAT}"
-crudini --set ${COUCHPOTATO_CONFIG_FILE} renamer enabled 1
-crudini --set ${COUCHPOTATO_CONFIG_FILE} renamer file_action copy
-crudini --set ${COUCHPOTATO_CONFIG_FILE} renamer from "${COUCHPOTATO_TORRENT_DOWNLOAD_DIR}"
-crudini --set ${COUCHPOTATO_CONFIG_FILE} renamer to "${COUCHPOTATO_MOVIES_MAIN_DIR}"
-crudini --set ${COUCHPOTATO_CONFIG_FILE} searcher preferred_method torrent
-crudini --set ${COUCHPOTATO_CONFIG_FILE} transmission enabled 1
-crudini --set ${COUCHPOTATO_CONFIG_FILE} transmission directory "${COUCHPOTATO_TORRENT_DOWNLOAD_DIR}"
-crudini --set ${COUCHPOTATO_CONFIG_FILE} transmission host "http://transmission-openvpn:9091"
-crudini --set ${COUCHPOTATO_CONFIG_FILE} transmission rpc_url transmission
-crudini --set ${COUCHPOTATO_CONFIG_FILE} updater automatic 0
 
 echo "... DONE !"
 echo ""
