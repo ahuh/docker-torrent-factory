@@ -183,17 +183,17 @@ services:
   # Use this configuration for '':
   # <advancedsettings>
   #   <videodatabase>
-  #     <name>kodi-video</type>
+  #     <name>kodi-video</name>
   #     <type>mysql</type>
-  #     <host>***DEVICE HOSTNAME OR IP***</host>
+  #     <host>***DEVICE IP***</host>
   #     <port>3636</port>
   #     <user>${KODI_DB_USER}</user>
   #     <pass>${KODI_DB_PASSWORD}</pass>
   #   </videodatabase> 
   #   <musicdatabase>
-  #     <name>kodi-music</type>
+  #     <name>kodi-music</name>
   #     <type>mysql</type>
-  #     <host>***DEVICE HOSTNAME OR IP***</host>
+  #     <host>***DEVICE IP***</host>
   #     <port>3636</port>
   #     <user>${KODI_DB_USER}</user>
   #     <pass>${KODI_DB_PASSWORD}</pass>
