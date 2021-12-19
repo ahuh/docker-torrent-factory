@@ -1,0 +1,55 @@
+version: "3.3"
+
+volumes:
+
+  portainer_data:
+
+services:
+  
+  # ==========================================================================
+  # Portainer service
+  # => Monitor and manage docker environment with a web UI
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    labels:
+      # Enable automatic update with Watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Access Docker socket to manage all containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Portainer data (not persisted)
+      - portainer_data:/data
+    ports:
+      - 8000:8000
+      # Portainer web UI port
+      - 9000:9000
+    restart: unless-stopped
+
+  # ==========================================================================
+  # Watchtower service
+  # => Automatically updates docker images and containers
+  watchtower:
+    # For x86 / x64 processors:
+    image: containrrr/watchtower:latest
+    # For ARM processors:
+    #image: containrrr/watchtower:armhf-latest
+    container_name: watchtower
+    labels:
+      # Enable automatic update with Watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # Only watch and update labelled containers
+      - WATCHTOWER_LABEL_ENABLE=true
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Access Docker socket to manage all containers
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
