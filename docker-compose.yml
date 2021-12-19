@@ -80,7 +80,7 @@ services:
       - 8789:8789
       # JOAL Web UI Port
       - 9092:9092
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # JOAL service
@@ -100,7 +100,7 @@ services:
     network_mode: "service:transmission-openvpn"
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    restart: unless-stopped
+    restart: always
     command: "--joal-conf=/data --spring.main.web-environment=true --server.port=9092 --joal.ui.path.prefix=${JOAL_PATH_PREFIX} --joal.ui.secret-token=${JOAL_SECRET_TOKEN}"
 
   # ==========================================================================
@@ -133,7 +133,7 @@ services:
     ports:
       # Medusa Web UI port
       - 8081:8081
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # Radarr service
@@ -182,7 +182,7 @@ services:
     ports:
       # Radarr Web UI port
       - 7878:7878
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # Kodi MariaDB service
@@ -239,7 +239,7 @@ services:
     ports:
       # MariaDB port to configure in Kodi to connect to MySQL
       - 3636:3306
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # nginx service
@@ -275,7 +275,7 @@ services:
       - 44491:44491
     # User from docker host to impersonate in container (configured in .env file)
     user: "${USER_PUID}:${USER_PGID}"
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # MiniDLNA service
@@ -311,7 +311,7 @@ services:
       - /share/Multimedia/Enfants/Series:/storage/Enfants/Series:ro
       - /share/Multimedia/Enfants/Videos:/storage/Enfants/Videos:ro
       #- external-hd1:/storage/_hd1:ro
-    restart: unless-stopped
+    restart: always
 
   # ==========================================================================
   # pyphotorg service
@@ -357,4 +357,4 @@ services:
       - /share/Perso/Photos:/storage/Photos
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
-    restart: unless-stopped
+    restart: always
