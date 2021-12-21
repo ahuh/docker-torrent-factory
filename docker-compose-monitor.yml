@@ -47,6 +47,10 @@ services:
     environment:
       # Only watch and update labelled containers
       - WATCHTOWER_LABEL_ENABLE=true
+      # Restart one image at time instead of stopping and starting all at once
+      - WATCHTOWER_ROLLING_RESTART=true
+      # Job scheduler (cron format)
+      - "WATCHTOWER_SCHEDULE=0 15 5 * * *"
     volumes:
       # Sync time with docker host
       - /etc/localtime:/etc/localtime:ro
