@@ -185,6 +185,39 @@ services:
     restart: always
 
   # ==========================================================================
+  # Bazaar service
+  # => TODO
+  bazarr:
+    image: linuxserver/bazarr
+    container_name: bazarr
+    labels:
+      # Enable automatic update with Watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /share/Download/tools/bazarr:/config
+      # Storage dirs
+      - /share/Multimedia/Films:/storage/Films
+      - /share/Multimedia/Enfants/Films:/storage/Enfants/Films
+      - /share/Multimedia/Series:/storage/Series
+      - /share/Multimedia/Enfants/Series:/storage/Enfants/Series
+      #- external-hd1:/storage/_hd1
+    ports:
+      # Bazaar Web UI port
+      - 6767:6767
+    restart: always
+
+  # ==========================================================================
   # Kodi MariaDB service
   # => MariaDB for Kodi configuration sharing between devices
   #
@@ -339,7 +372,7 @@ services:
       - "DEDUP_DIR_ORDER_04=/storage/Photos/Mobile Julien"
       - "DEDUP_DIR_PATH_FILTER=/.@__thumb"
       # Organizer - Path couples: sync dirs (source) and storage dirs (target)
-      - "ORG_INCOMING_PATH_01=/storage/sync/camera-osiris"
+      - "ORG_INCOMING_PATH_01=/storage/sync/camera-julien"
       - "ORG_STORAGE_PATH_01=/storage/Photos/Mobile Julien"
       - "ORG_INCOMING_PATH_02=/storage/sync/camera-olivia"
       - "ORG_STORAGE_PATH_02=/storage/Photos/Mobile Olivia"
