@@ -31,7 +31,7 @@ services:
       - OPENVPN_PROVIDER=surfshark
       # OPENVPN_CONFIG: comma separated list allowed, with random selection at startup
       - OPENVPN_CONFIG=fr-par.prod.surfshark.com_udp
-      - OPENVPN_OPTS=--inactive 3600 --ping 10 --ping-exit 60
+      - OPENVPN_OPTS=--mute-replay-warnings --inactive 3600 --ping 10 --ping-exit 60
       # OpenVPN credentials to connect to VPN (credentials stored in .env file)
       - OPENVPN_USERNAME=${OPENVPN_USERNAME}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
