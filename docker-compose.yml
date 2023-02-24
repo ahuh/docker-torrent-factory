@@ -17,7 +17,7 @@ services:
   # Transmission-OpenVPN service
   # => torrent server secured by VPN connection
   transmission-openvpn:
-    image: haugene/transmission-openvpn:latest
+    image: haugene/transmission-openvpn:4.2
     container_name: transmission-openvpn
     labels:
       # Enable automatic update with Watchtower
