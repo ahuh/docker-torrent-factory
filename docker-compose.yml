@@ -17,7 +17,7 @@ services:
   # Transmission-OpenVPN service
   # => torrent server secured by VPN connection
   transmission-openvpn:
-    image: haugene/transmission-openvpn:4.2
+    image: haugene/transmission-openvpn:latest
     container_name: transmission-openvpn
     labels:
       # Enable automatic update with Watchtower
@@ -188,7 +188,7 @@ services:
   # Bazaar service
   # => TODO
   bazarr:
-    image: linuxserver/bazarr
+    image: linuxserver/bazarr:latest
     container_name: bazarr
     labels:
       # Enable automatic update with Watchtower
