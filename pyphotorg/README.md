@@ -38,7 +38,7 @@ Other features :
 * All logs are displayed in stdout, available with command `docker logs pyphotorg` (or in Portainer web UI)
 * A dry-run mode is available: if enable, no file is moved in organize operation, and no file is removed in deduplicate operation. Instead, simulated actions are logged and the deduplication report is generated.
 
-## Configuration example with docker-compose
+## Configuration example with docker compose
 
 ```yaml
 version: "3.3"

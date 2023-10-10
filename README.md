@@ -72,7 +72,7 @@ If you wish to secure external access to your services web UIs with nginx, you w
 You have to install Docker on the device or NAS that will host the Docker Torrent Factory.
 
 #### 3.3.1) QNAP NAS
-Install the `Container Station` add-on in the QTS web UI, and enable SSH access. It provides docker and docker-compose available in SSH.
+Install the `Container Station` add-on in the QTS web UI, and enable SSH access. It provides docker and docker compose available in SSH.
 
 #### 3.3.2) WD MyCloud EX2 Ultra OS3
 On WD MyCloud EX2 Ultra, you need to replace the old docker install by a fresh one, and then install docker-compose.
