@@ -228,7 +228,6 @@ services:
   # Use this configuration for '':
   # <advancedsettings>
   #   <videodatabase>
-  #     <name>kodi-video</name>
   #     <type>mysql</type>
   #     <host>***DEVICE IP***</host>
   #     <port>3636</port>
@@ -236,7 +235,6 @@ services:
   #     <pass>${KODI_DB_PASSWORD}</pass>
   #   </videodatabase> 
   #   <musicdatabase>
-  #     <name>kodi-music</name>
   #     <type>mysql</type>
   #     <host>***DEVICE IP***</host>
   #     <port>3636</port>
@@ -267,7 +265,7 @@ services:
       - MYSQL_USER=${KODI_DB_USER}
       - MYSQL_PASSWORD=${KODI_DB_PASSWORD}
     volumes:
-      # Configuration dir (must contain 'initdb.d/ini_kodi.sql' script for initial install)
+      # Configuration dir (must contain 'initdb.d/kodi.sql' script for initial install)
       - /share/Download/tools/kodi-mariadb:/config
     ports:
       # MariaDB port to configure in Kodi to connect to MySQL
