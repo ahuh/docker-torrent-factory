@@ -256,4 +256,10 @@ Run these commands on the NAS / device, in the cloned repo dir:
 ```bash
 # Force MiniDLNA reindexation of all medias (DTF services must be running)
 $ ./reindex-media.sh
+
+# Upgrade database on Kodi MariaDB container (DTF services must be running): to do after each MariaDB version upgrade !
+$ ./kodi-upgrade-db.sh
+
+# Copy a database on Kodi MariaDB container (DTF services must be running): for backup/restore operations
+$ ./kodi-copy-db.sh SOURCE_DB DEST_DB
 ```
