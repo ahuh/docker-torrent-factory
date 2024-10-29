@@ -41,8 +41,6 @@ Other features :
 ## Configuration example with docker compose
 
 ```yaml
-version: "3.3"
-
 services:
   # ==========================================================================
   # pyphotorg
