@@ -134,6 +134,46 @@ services:
     restart: always
 
   # ==========================================================================
+  # Jackett
+  # => Proxy server for Medusa, to provide custom torrent providers
+  #
+  # ------------------------------------
+  # Manual configuration in Medusa Web UI to use jacket:
+  # > Reference: https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa
+  # - Settings > Search Providers > Configure Custom Torznab Providers
+  # - Provider name: ...
+  # - Site Url: http://jackett:9117/api/v2.0/indexers/... <copy end of URL from Jackett Torznab Feed link>
+  # - Api key: <copy API Key from Jackett>
+  # ------------------------------------
+  jackett:
+    image: linuxserver/jackett:latest
+    container_name: jackett
+    labels:
+      # Enable automatic update with Watchtower
+      - "com.centurylinklabs.watchtower.enable=true"
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      # User from docker host to impersonate in container (configured in .env file)
+      - PUID=${USER_PUID}
+      - PGID=${USER_PGID}
+      # Allow Jackett to update inside of the container (currently recommended by Jackett and enabled by default)
+      - AUTO_UPDATE=true
+    volumes:
+      # Sync time with docker host
+      - /etc/localtime:/etc/localtime:ro
+      # Configuration dir
+      - /share/Download/tools/jackett:/config
+      # Path to torrent blackhole
+      - /path/to/blackhole:/storage/watch
+    ports:
+      # Jackett Web UI port
+      - 9117:9117
+    restart: always
+
+  # ==========================================================================
   # Radarr service
   # => Movies manager and auto-downloader, connected to torrent server
   #
@@ -184,7 +224,7 @@ services:
 
   # ==========================================================================
   # Bazaar service
-  # => TODO
+  # => Companion application to Radarr that manages and downloads subtitles
   bazarr:
     image: linuxserver/bazarr:latest
     container_name: bazarr
@@ -387,23 +427,3 @@ services:
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
     restart: always
-
-  # neko:
-  #   image: m1k1o/neko:firefox
-  #   container_name: neko
-  #   shm_size: 1gb
-  #   dns:
-  #     # Public DNS
-  #     - 8.8.8.8
-  #     - 8.8.4.4
-  #   ports:
-  #     - 8084:8080
-  #     - 52000-52100:52000-52100/udp
-  #   environment:
-  #     NEKO_SCREEN: '1024×576@30'
-  #     NEKO_PASSWORD: neko
-  #     NEKO_PASSWORD_ADMIN: admin
-  #     NEKO_EPR: 52000-52100
-  #     NEKO_ICELITE: 0
-  #     NEKO_NAT1TO1: 192.168.0.50
-  #   restart: always
