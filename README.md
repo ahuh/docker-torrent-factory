@@ -131,29 +131,34 @@ For tools configuration and logs (JOAL, Kodi MariaDB, Medusa, MiniDLNA, nginx, R
 
 ```bash
 /share/Download/tools
-├── joal              # Contains JOAL configuration files (use dtf-configurator to initialize)
-|   ├── config.json   # JOAL configuration file (use dtf-configurator to setup)
-│   ├── clients       # JOAL clients dir
-│   └── torrents      # JOAL torrents dir
-├── kodi-mariadb      # Kodi MariaDB configuration, database and logs
-│   └── initdb.d      # Initialization scripts dir (use dtf-configurator to setup)
-│       └── kodi.sql  # Kodi DB initialization script (use dtf-configurator to setup)
-├── medusa            # Contains Medusa configuration, database, cache and logs
-│   ├── config.ini    # Medusa configuration file (use dtf-configurator to setup, use Web UI for full
-│   └── ...           #   setup)
-├── minidlna          # Contains MiniDLNA database cache (delete content to force reindex)
-│   └── ...
-├── nginx             # Contains nginx configuration, passwords and logs
-│   ├── nginx.conf    # nginx configuration file (use dtf-configurator to setup)
-│   ├── passwords     # nginx credentials for basic authentication (use dtf-configurator to setup)
-│   └── logs          # nginx logs
-├── radarr            # Contains Radarr configuration, database, cache and logs
-│   └── ...           #   (do not modify, managed by Radarr with Wed UI)
-├── ssl               # Contains certificates for nginx HTTPS access 
-│   └── ...           # **GENERATE FILES .crt AND .key HERE**
-└── transmission      # Contains Transmission configuration, cache and logs
-    ├── settings.json # Transmission configuration file (do not modify, overwritten by
-    └── ...           #   transmission-openvpn)
+├── jackett                   # Contains Jackett configuration files (use dtf-configurator to initialize)
+|   ├── Jackett               # Jackett configuration home dir
+│   │   ├── ServerConfig.json # Kodi DB initialization script (use dtf-configurator to setup)
+│   │   └── ... 
+|   └── cardigann             # Custom API definitions in this dir (use dtf-configurator to setup, and add your owns)
+├── joal                      # Contains JOAL configuration files (use dtf-configurator to initialize)
+|   ├── config.json           # JOAL configuration file (use dtf-configurator to setup)
+│   ├── clients               # JOAL clients dir
+│   └── torrents              # JOAL torrents dir
+├── kodi-mariadb              # Kodi MariaDB configuration, database and logs
+│   └── initdb.d              # Initialization scripts dir (use dtf-configurator to setup)
+│       └── kodi.sql          # Kodi DB initialization script (use dtf-configurator to setup)
+├── medusa                    # Contains Medusa configuration, database, cache and logs
+│   ├── config.ini            # Medusa configuration file (use dtf-configurator to setup, use Web UI for full
+│   └── ...                   #   setup)
+├── minidlna                  # Contains MiniDLNA database cache (delete content to force reindex)
+│   └── ...        
+├── nginx                     # Contains nginx configuration, passwords and logs
+│   ├── nginx.conf            # nginx configuration file (use dtf-configurator to setup)
+│   ├── passwords             # nginx credentials for basic authentication (use dtf-configurator to setup)
+│   └── logs                  # nginx logs
+├── radarr                    # Contains Radarr configuration, database, cache and logs
+│   └── ...                   #   (do not modify, managed by Radarr with Wed UI)
+├── ssl                       # Contains certificates for nginx HTTPS access 
+│   └── ...                   # **GENERATE FILES .crt AND .key HERE**
+└── transmission              # Contains Transmission configuration, cache and logs
+    ├── settings.json         # Transmission configuration file (do not modify, overwritten by
+    └── ...                   #   transmission-openvpn)
 ```
 
 You have to create the `tools` dir on your NAS / device, before launching the configurator service that will initialize the directory structure and configuration files.
