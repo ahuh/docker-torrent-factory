@@ -1,0 +1,4 @@
+{
+  "Port": 9117,
+  "BaseUrlOverride": "http://jackett:9117"
+}

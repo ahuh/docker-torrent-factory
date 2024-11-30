@@ -138,7 +138,7 @@ services:
   # => Proxy server for Medusa, to provide custom torrent providers
   #
   # ------------------------------------
-  # Manual configuration in Medusa Web UI to use jacket:
+  # Manual configuration in Medusa Web UI to use Jackett:
   # > Reference: https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa
   # - Settings > Search Providers > Configure Custom Torznab Providers
   # - Provider name: ...

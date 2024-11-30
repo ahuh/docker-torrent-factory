@@ -37,6 +37,7 @@ Table of contents:
     - [5.2) Launch or update DTF services](#52-launch-or-update-dtf-services)
     - [5.3) Terminate DTF or Monitor services](#53-terminate-dtf-or-monitor-services)
     - [5.4) Other commands](#54-other-commands)
+  - [6) Additional configuration](#6-additional-configuration)
 
 ## 1) How does it work ?
 This repository contains a main `docker-compose.yml` file, configured to launch each dedicated service (docker containers). This diagram explains how it works:<br /><br />
@@ -52,6 +53,7 @@ Other docker compose files are available :
 * Bittorrent **ratio booster** with web UI (JOAL)
 * **Automatic downloader for TV shows** (Medusa), connected to the Bittorent client
 * **Automatic downloader for movies** (Radarr), connected to the Bittorent client
+* **API Proxy for torrent trackers** (Jackett), connected to the automatic donwloader for TV shows
 * **Reverse-proxy** (nginx), securing (basic authentication, SSL certificates) and exposing services on internet (Medusa, Radarr, Transmission)
 * **UPnP / DLNA** server (MiniDLNA) to broadcast your media files in your local network
 * **HTTP Proxy server** to share the VPN connection in your local network
@@ -59,6 +61,7 @@ Other docker compose files are available :
 * **Personal photos / videos organizer and deduplicator** (Pyphotorg), executed once a week
 * **Configurator service** (DTF-Configurator) available to initialize configuration files for all services
 * **Monitor services** (Portainer and Watchtower) available to manager docker with web UI, and to automatically update all container and images once a day
+* **Selection of services to enable** using an environment config file (you do not need to use everything !)
 
 ## 3) Prerequisites
 
@@ -203,7 +206,7 @@ See `docker-compose.yml` and `docker-compose-configurator.yml` configuration: ad
 
 Copy the `template.env` file and paste it as the `.env` file. This file will automatically be used by the docker compose commands to replace environment variable values.
 
-Configure the `.env` file with your own environment values: user / password to use for each service, VPN type and credentials, etc.
+Configure the `.env` file with your own environment values: components to enable / disable, user / password to use for each service, VPN type and credentials, etc.
 
 ## 5) Usage
 
@@ -263,3 +266,9 @@ $ ./kodi-upgrade-db.sh
 # Copy a database on Kodi MariaDB container (DTF services must be running): for backup/restore operations
 $ ./kodi-copy-db.sh SOURCE_DB DEST_DB
 ```
+
+## 6) Additional configuration
+
+After the DTF is launched, you may connect to each Web UI to finalize the configuration of each component.
+
+Follow configuration tips from the `docker-compose.yml` file (see comment at the beginning of each component configuration in YAML).

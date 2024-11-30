@@ -5,6 +5,11 @@
 
 # ========================================================================
 # Variables
+JACKETT_CONFIG_DIR=/config/jackett
+JACKETT_HOME_DIR=/config/jackett/Jackett
+JACKETT_CONFIG_FILE=${JACKETT_HOME_DIR}/ServerConfig.json
+JACKETT_DEF_DIR=${JACKETT_CONFIG_DIR}/cardigann/definitions
+JACKETT_YGG_API_FILE=${JACKETT_DEF_DIR}/ygg-api.yml
 JOAL_TMP_DIR=/tmp/joal/clients
 JOAL_CONFIG_DIR=/config/joal
 JOAL_TORRENTS_DIR=${JOAL_CONFIG_DIR}/torrents
@@ -27,6 +32,12 @@ TRANSMISSION_CONFIG_DIR=/config/transmission
 # ========================================================================
 echo "Creating / Updating configuration dirs ..."
 
+mkdir -p ${JACKETT_CONFIG_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JACKETT_CONFIG_DIR}
+mkdir -p ${JACKETT_HOME_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JACKETT_HOME_DIR}
+mkdir -p ${JACKETT_DEF_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${JACKETT_DEF_DIR}
 mkdir -p ${JOAL_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${JOAL_CONFIG_DIR}
 mkdir -p ${JOAL_TORRENTS_DIR}
@@ -56,9 +67,25 @@ echo "... DONE !"
 echo ""
 
 # ========================================================================
+echo "Creating / Updating Jackett configuration files ..."
+
+# Configuration file
+touch ${JACKETT_CONFIG_FILE}
+chown ${RUN_AS}:${RUN_AS} ${JACKETT_CONFIG_FILE}
+cat /resources/ServerConfig.json > ${JACKETT_CONFIG_FILE}
+
+# YGG API custom definition file
+touch ${JACKETT_YGG_API_FILE}
+chown ${RUN_AS}:${RUN_AS} ${JACKETT_YGG_API_FILE}
+cat /resources/ygg-api.yml > ${JACKETT_YGG_API_FILE}
+
+echo "... DONE !"
+echo ""
+
+# ========================================================================
 echo "Creating / Updating JOAL configuration file ..."
 
-# Configure file
+# Configuration file
 touch ${JOAL_CONFIG_FILE}
 chown ${RUN_AS}:${RUN_AS} ${JOAL_CONFIG_FILE}
 cat /resources/config.json > ${JOAL_CONFIG_FILE}
@@ -69,7 +96,7 @@ echo ""
 # ========================================================================
 echo "Creating / Updating Kodi MariaDB configuration file ..."
 
-# Configure file
+# Configuration file
 touch ${KODI_MARIADB_CONFIG_FILE}
 chown ${RUN_AS}:${RUN_AS} ${KODI_MARIADB_CONFIG_FILE}
 cat /resources/kodi.sql > ${KODI_MARIADB_CONFIG_FILE}
@@ -125,7 +152,7 @@ echo "Creating / Updating nginx configuration file ..."
 echo "${NGINX_PASSWORD}" | htpasswd -i -c ${NGINX_HTPASSWD_FILE} ${NGINX_USERNAME}
 chown ${RUN_AS}:${RUN_AS} ${NGINX_HTPASSWD_FILE}
 
-# Configure file
+# Configuration file
 touch ${NGINX_CONFIG_FILE}
 chown ${RUN_AS}:${RUN_AS} ${NGINX_CONFIG_FILE}
 cat /resources/nginx.conf > ${NGINX_CONFIG_FILE}
