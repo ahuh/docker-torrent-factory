@@ -204,7 +204,7 @@ storage
 
 You will have to map host directories to these storage container volumes before launching the Docker Torrent Factory.
 
-See `docker-compose.yml` and `docker-compose-configurator.yml` configuration: adapt it to your own environment.
+See `docker-compose.yml` and `docker-compose-configurator.yml` configuration files: adapt each one to your own environment.
 
 **WARNING : the mapped host-side directories must exist before starting containers, with correct read/write access (see UID/GID).**
 

@@ -1,16 +1,16 @@
-FROM alpine:3.14.0
+FROM alpine:3.21
 
 # Volumes
 VOLUME /config
 
 # Install packages
 RUN apk add --no-cache bash curl jq tini tar shadow apache2-utils py3-pip \
-    && pip3 install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir crudini
+    && pip3 install --no-cache-dir --upgrade pip --break-system-packages \
+    && pip install --no-cache-dir crudini --break-system-packages
 
 # Download latest release of JOAL with config files
 RUN mkdir -p /tmp/joal \
- 	&& export JOAL_VERSION=$(curl -k -sX GET "https://api.github.com/repos/anthonyraymond/joal-desktop/releases/latest" | jq -r .tag_name) \
+ 	&& export JOAL_VERSION=$(curl -k -sX GET "https://api.github.com/repos/anthonyraymond/joal/releases/latest" | jq -r .tag_name) \
 	&& curl -k -o /tmp/joal.tar.gz -sSL "https://github.com/anthonyraymond/joal/releases/download/${JOAL_VERSION}/joal.tar.gz" \
 	&& tar xvfz /tmp/joal.tar.gz -C /tmp/joal \
     && rm -rf /tmp/joal/*.* \

@@ -1,4 +1,4 @@
-FROM alpine:3.14.0
+FROM alpine:3.21
 
 # Env vars (default values)
 ENV ENABLE_ORGANIZE=true \
@@ -11,11 +11,11 @@ ENV ENABLE_ORGANIZE=true \
 # Install alpine packages
 # <!> Install pandas with apk (pip version requires build on arm, too long)
 RUN apk add --no-cache bash sudo tini shadow exiftool python3 py3-pandas py3-pip \
-    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir --upgrade pip --break-system-packages \
     && ln -sf python3 /usr/bin/python
 
 # Install python packages
-RUN pip install --no-cache-dir croniter pause duplicate-finder openpyxl
+RUN pip install --no-cache-dir croniter pause duplicate-finder openpyxl --break-system-packages
 
 # Create and set user & group for impersonation
 RUN groupmod -g 1000 users \
