@@ -46,7 +46,7 @@ This repository contains a main `docker-compose.yml` file, configured to launch 
 
 Other docker compose files are available :
 * The `docker-compose-configurator.yml` file is provided to deploy a **Configurator** service, that you may optionally use to automatically configure each service to work together. This one is a "one-shot" process: you may launch it one time before launching the main docker-compose file, in order to generate the configuration files for each service (not possible for Radarr: must be manually configured in web UI). Note that you still can configure each service with the dedicated web UI (Medusa, Radarr, etc) to do additional settings.
-* The `docker-compose-monitor.yml` file is provided to deploy a **Portainer** service that you may use to monitor and manage your docker environment with a web UI, and a **Watchtower** service that automatically updates docker images and containers.
+* The `docker-compose-monitor.yml` file is provided to deploy a **Portainer** service that you may use to monitor and manage your docker environment with a web UI.
 
 ## 2) Features
 * **VPN integration** to secure peer-to-peer downloads and uploads
@@ -61,7 +61,7 @@ Other docker compose files are available :
 * **Shared video and music databases** (MariaDB) for Kodi clients in your local network
 * **Personal photos / videos organizer and deduplicator** (Pyphotorg), executed once a week
 * **Configurator service** (DTF-Configurator) available to initialize configuration files for all services
-* **Monitor services** (Portainer and Watchtower) available to manager docker with web UI, and to automatically update all container and images once a day
+* **Monitor services** (Portainer) available to manager docker with web UI
 * **Selection of services to enable** using an environment config file (you do not need to use everything !)
 
 ## 3) Prerequisites
