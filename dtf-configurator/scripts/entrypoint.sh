@@ -140,7 +140,7 @@ crudini --set ${MEDUSA_CONFIG_FILE} General torrent_method transmission
 crudini --set ${MEDUSA_CONFIG_FILE} General tv_download_dir "${MEDUSA_TORRENT_DOWNLOAD_DIR}"
 # - Torrent section
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_auth_type none
-crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_host "http://transmission-openvpn:9091/"
+crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_host "http://localhost:9091/"
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_path "${MEDUSA_TORRENT_DOWNLOAD_DIR}"
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_rpcurl transmission
 crudini --set ${MEDUSA_CONFIG_FILE} TORRENT torrent_seed_location "${MEDUSA_TORRENT_SEED_DIR}"

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # =======================================================================================
 # Upgrade database on Kodi MariaDB container: to do after each MariaDB version upgrade !

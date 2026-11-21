@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # =======================================================================================
 # Copy a database on Kodi MariaDB container: for backup/restore operations

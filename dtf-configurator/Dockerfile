@@ -4,7 +4,7 @@ FROM alpine:3.24
 VOLUME /config
 
 # Install packages
-RUN apk add --no-cache bash curl jq tini tar shadow apache2-utils py3-pip \
+RUN apk update && apk add --no-cache bash curl jq tini tar shadow apache2-utils py3-pip \
     && pip3 install --no-cache-dir --upgrade pip --break-system-packages \
     && pip install --no-cache-dir crudini --break-system-packages
 

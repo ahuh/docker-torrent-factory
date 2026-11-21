@@ -21,4 +21,6 @@ Or with buildx (build & push multiarch):
 ```bash
 $ ./docker-buildx.sh
 ```
-WARNING: for Windows environment, do not execute buildx in Windows but directly in WSL 2
+WARNINGS:
+* `docker buildx` does not work in QNAP NAS: install and execute in WSL instead
+* For Windows environment, do not execute buildx in Windows but directly in WSL

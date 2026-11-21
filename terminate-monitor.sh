@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # =======================================================================================
 # Terminate the Docker Torrent Factory monitor 

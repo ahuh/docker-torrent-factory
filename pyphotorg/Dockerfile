@@ -10,7 +10,7 @@ ENV ENABLE_ORGANIZE=true \
 
 # Install alpine packages
 # <!> Install pandas with apk (pip version requires build on arm, too long)
-RUN apk add --no-cache bash sudo tini shadow exiftool python3 py3-pandas py3-pip \
+RUN apk update && apk add --no-cache bash sudo tini shadow exiftool python3 py3-pandas py3-pip \
     && pip3 install --no-cache-dir --upgrade pip --break-system-packages \
     && ln -sf python3 /usr/bin/python
 

@@ -12,6 +12,7 @@ services:
       # _______________________________________________________________
       # Medusa config
       # • Use HTTP proxy for torrent search (true / false)
+      #   DO NOT USE if Medusa already uses the VPN tunnel with `network_mode: "service:transmission-openvpn"`
       - MEDUSA_USE_HTTP_PROXY=false
       # • Torrent dirs
       - MEDUSA_TORRENT_DOWNLOAD_DIR=/storage/complete/medusa
