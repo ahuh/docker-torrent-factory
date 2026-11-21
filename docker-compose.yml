@@ -83,6 +83,10 @@ services:
       - 8789:8789
       # JOAL Web UI Port
       - 9092:9092
+      # Seedr Web UI port
+      - 9093:8080
+      # Seedr BitTorrent port
+      - 51414:49152
     restart: always
 
   # ==========================================================================
@@ -102,6 +106,27 @@ services:
     user: "${USER_PUID}:${USER_PGID}"
     restart: always
     command: "--joal-conf=/data --spring.main.web-environment=true --server.port=9092 --joal.ui.path.prefix=${JOAL_PATH_PREFIX} --joal.ui.secret-token=${JOAL_SECRET_TOKEN}"
+
+  # ==========================================================================
+  # Seedr service
+  # => JOAL alternative with web UI to boost torrent seed ratio
+  seedr:
+    image: ghcr.io/rursache/seedr:latest
+    container_name: seedr
+    depends_on:
+      - transmission-openvpn
+    # Seedr's entrypoint uses PUID/PGID to set data ownership before dropping privileges
+    environment:
+      PUID: ${USER_PUID}
+      PGID: ${USER_PGID}
+      USERNAME: ${SEEDR_USERNAME:-}
+      PASSWORD: ${SEEDR_PASSWORD:-}
+    volumes:
+      # Persistent configuration and data
+      - /share/Download/tools/seedr:/data
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
+    restart: always
 
   # ==========================================================================
   # Medusa service

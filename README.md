@@ -9,6 +9,7 @@ See GitHub repositories / Docker Hub images:
 | **Transmission-OpenVPN**<br />Torrent server secured by VPN connection | <ul><li>https://github.com/haugene/docker-transmission-openvpn</li><li>https://hub.docker.com/r/haugene/transmission-openvpn</li></ul>|
 | **Jackett**<br />API Support for your favorite torrent trackers  | <ul><li>https://github.com/Jackett/Jackett</li><li>https://hub.docker.com/r/linuxserver/jackett</li></ul>|
 | **JOAL**<br />Ratio Master clone with web UI to boost torrent seed ratio | <ul><li>https://github.com/anthonyraymond/joal</li><li>https://hub.docker.com/r/anthonyraymond/joal</li></ul>|
+| **Seedr**<br />JOAL alternative with web UI to boost torrent seed ratio | <ul><li>https://github.com/rursache/Seedr</li></ul>|
 | **Medusa**<br />TV shows manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-medusa</li><li>https://hub.docker.com/r/linuxserver/medusa</li></ul>|
 | **Radarr**<br />Movies manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/Radarr/Radarr</li><li>https://hub.docker.com/r/linuxserver/radarr</li></ul>|
 | **nginx**<br />Reverse proxy, used to expose services as HTTPS with SSL certificates and basic authentication | <ul><li>https://github.com/nginxinc/docker-nginx</li><li>https://hub.docker.com/_/nginx</li></ul>|
@@ -51,7 +52,7 @@ Other docker compose files are available :
 ## 2) Features
 * **VPN integration** to secure peer-to-peer downloads and uploads
 * **Bittorent client** with web UI (Transmission)
-* Bittorrent **ratio boosters** with web UI (JOAL)
+* Bittorrent **ratio boosters** with web UIs (JOAL and Seedr)
 * **Automatic downloader for TV shows** (Medusa), connected to the Bittorent client
 * **Automatic downloader for movies** (Radarr), connected to the Bittorent client
 * **API Proxy for torrent trackers** (Jackett), connected to the automatic donwloader for TV shows
@@ -129,7 +130,7 @@ The containers will run impersonated as this user, in order to have read/write a
 The configuration of all the containers are stored on volumes, mapped with the docker host.
 
 #### 4.2.1) Directory structure on host-side
-For tools configuration and logs (JOAL, Kodi MariaDB, Medusa, MiniDLNA, nginx, Radarr, Transmission):
+For tools configuration and logs (JOAL, Seedr, Kodi MariaDB, Medusa, MiniDLNA, nginx, Radarr, Transmission):
 
 ```bash
 /share/Download/tools
@@ -142,6 +143,10 @@ For tools configuration and logs (JOAL, Kodi MariaDB, Medusa, MiniDLNA, nginx, R
 |   ├── config.json           # JOAL configuration file (use dtf-configurator to setup)
 │   ├── clients               # JOAL clients dir
 │   └── torrents              # JOAL torrents dir
+├── seedr                     # Seedr configuration and data
+│   ├── config.json           # Seedr settings
+│   ├── clients               # Seedr client profiles
+│   └── torrents              # Torrent files
 ├── kodi-mariadb              # Kodi MariaDB configuration, database and logs
 │   └── initdb.d              # Initialization scripts dir (use dtf-configurator to setup)
 │       └── kodi.sql          # Kodi DB initialization script (use dtf-configurator to setup)
