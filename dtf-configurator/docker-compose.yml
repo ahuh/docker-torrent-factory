@@ -1,4 +1,4 @@
 services:
-  pyphotorg:
+  dtf-configurator:
     build: .
     image: ahuh/dtf-configurator

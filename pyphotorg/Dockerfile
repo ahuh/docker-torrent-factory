@@ -1,4 +1,4 @@
-FROM alpine:3.21
+FROM alpine:3.24
 
 # Env vars (default values)
 ENV ENABLE_ORGANIZE=true \
