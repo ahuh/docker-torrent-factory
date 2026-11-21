@@ -18,6 +18,11 @@ services:
     # image: haugene/transmission-openvpn:5.5.2 # Last tested working version
     image: haugene/transmission-openvpn:latest
     container_name: transmission-openvpn
+    hostname: transmission-openvpn
+    dns:
+      # Public DNS
+      - 8.8.8.8
+      - 8.8.4.4
     cap_add:
       # Admin credentials for docker container
       - NET_ADMIN
@@ -81,6 +86,16 @@ services:
       - 9091:9091
       # HTTP Proxy port
       - 8789:8789
+      # Medusa Web UI port
+      - 8081:8081
+      # Radarr Web UI port
+      - 7878:7878
+      # Bazarr Web UI port
+      - 6767:6767
+      # Jackett Web UI port
+      - 9117:9117
+      # FlareSolverr API port
+      - 8191:8191
       # JOAL Web UI Port
       - 9092:9092
       # Seedr Web UI port
@@ -134,10 +149,8 @@ services:
   medusa:
     image: linuxserver/medusa:latest
     container_name: medusa
-    dns:
-      # Public DNS
-      - 8.8.8.8
-      - 8.8.4.4
+    depends_on:
+      - transmission-openvpn
     environment:
       # User from docker host to impersonate in container (configured in .env file)
       - PUID=${USER_PUID}
@@ -152,9 +165,8 @@ services:
       - /share/Multimedia/Series:/storage/Series
       - /share/Multimedia/Enfants/Series:/storage/Enfants/Series
       #- external-hd1:/storage/_hd1
-    ports:
-      # Medusa Web UI port
-      - 8081:8081
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
     restart: always
 
   # ==========================================================================
@@ -166,16 +178,14 @@ services:
   # > Reference: https://github.com/pymedusa/Medusa/wiki/Using-Jackett-with-Medusa
   # - Settings > Search Providers > Configure Custom Torznab Providers
   # - Provider name: ...
-  # - Site Url: http://jackett:9117/api/v2.0/indexers/... <copy end of URL from Jackett Torznab Feed link>
+  # - Site Url: http://localhost:9117/api/v2.0/indexers/... <copy end of URL from Jackett Torznab Feed link>
   # - Api key: <copy API Key from Jackett>
   # ------------------------------------
   jackett:
     image: linuxserver/jackett:latest
     container_name: jackett
-    dns:
-      # Public DNS
-      - 8.8.8.8
-      - 8.8.4.4
+    depends_on:
+      - transmission-openvpn
     environment:
       # User from docker host to impersonate in container (configured in .env file)
       - PUID=${USER_PUID}
@@ -189,9 +199,29 @@ services:
       - /share/Download/tools/jackett:/config
       # Path to torrent blackhole
       - /share/Download/watch:/storage/watch
-    ports:
-      # Jackett Web UI port
-      - 9117:9117
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
+    restart: always
+
+  # ==========================================================================
+  # FlareSolverr
+  # => Internal proxy for indexers that require browser challenge solving
+  #
+  # ------------------------------------
+  # Manual configuration in Jackett Web UI to use FlareSolverr:
+  # > Reference: https://github.com/Jackett/Jackett#configuring-flaresolverr
+  # - Jackett Configuration > Flaresolverr API URL: http://localhost:8191
+  # - Apply server settings
+  # ------------------------------------
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    depends_on:
+      - transmission-openvpn
+    environment:
+      - LOG_LEVEL=info
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
     restart: always
 
   # ==========================================================================
@@ -217,6 +247,8 @@ services:
   radarr:
     image: linuxserver/radarr:latest
     container_name: radarr
+    depends_on:
+      - transmission-openvpn
     dns:
       # Public DNS
       - 8.8.8.8
@@ -235,21 +267,18 @@ services:
       - /share/Multimedia/Films:/storage/Films
       - /share/Multimedia/Enfants/Films:/storage/Enfants/Films
       #- external-hd1:/storage/_hd1
-    ports:
-      # Radarr Web UI port
-      - 7878:7878
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
     restart: always
 
   # ==========================================================================
-  # Bazaar service
+  # Bazarr service
   # => Companion application to Radarr that manages and downloads subtitles
   bazarr:
     image: linuxserver/bazarr:latest
     container_name: bazarr
-    dns:
-      # Public DNS
-      - 8.8.8.8
-      - 8.8.4.4
+    depends_on:
+      - transmission-openvpn
     environment:
       # User from docker host to impersonate in container (configured in .env file)
       - PUID=${USER_PUID}
@@ -265,9 +294,8 @@ services:
       - /share/Multimedia/Series:/storage/Series
       - /share/Multimedia/Enfants/Series:/storage/Enfants/Series
       #- external-hd1:/storage/_hd1
-    ports:
-      # Bazaar Web UI port
-      - 6767:6767
+    # Use network from transmission-openvpn container to ensure traffic goes through VPN tunnel
+    network_mode: "service:transmission-openvpn"
     restart: always
 
   # ==========================================================================
@@ -303,6 +331,7 @@ services:
   kodi-mariadb:
     image: linuxserver/mariadb:latest
     container_name: kodi-mariadb
+    hostname: kodi-mariadb
     environment:
       # User from docker host to impersonate in container (configured in .env file)
       - PUID=${USER_PUID}
@@ -328,6 +357,7 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
+    hostname: nginx
     dns:
       # Public DNS
       - 8.8.8.8
@@ -361,6 +391,7 @@ services:
   minidlna:
     image: vladgh/minidlna:latest
     container_name: minidlna
+    hostname: minidlna
     network_mode: "host"
     environment:
       # MiniDLNA settings
@@ -394,6 +425,7 @@ services:
   pyphotorg:
     image: ahuh/pyphotorg:latest
     container_name: pyphotorg
+    hostname: pyphotorg
     environment:
       # Operation switches
       - ENABLE_ORGANIZE=true

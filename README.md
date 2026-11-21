@@ -8,6 +8,7 @@ See GitHub repositories / Docker Hub images:
 |-----------|------|
 | **Transmission-OpenVPN**<br />Torrent server secured by VPN connection | <ul><li>https://github.com/haugene/docker-transmission-openvpn</li><li>https://hub.docker.com/r/haugene/transmission-openvpn</li></ul>|
 | **Jackett**<br />API Support for your favorite torrent trackers  | <ul><li>https://github.com/Jackett/Jackett</li><li>https://hub.docker.com/r/linuxserver/jackett</li></ul>|
+| **FlareSolverr**<br />Internal proxy for indexers that require browser challenge solving | <ul><li>https://github.com/FlareSolverr/FlareSolverr</li></ul>|
 | **JOAL**<br />Ratio Master clone with web UI to boost torrent seed ratio | <ul><li>https://github.com/anthonyraymond/joal</li><li>https://hub.docker.com/r/anthonyraymond/joal</li></ul>|
 | **Seedr**<br />JOAL alternative with web UI to boost torrent seed ratio | <ul><li>https://github.com/rursache/Seedr</li></ul>|
 | **Medusa**<br />TV shows manager and auto-downloader, connected to torrent server | <ul><li>https://github.com/linuxserver/docker-medusa</li><li>https://hub.docker.com/r/linuxserver/medusa</li></ul>|
@@ -56,6 +57,7 @@ Other docker compose files are available :
 * **Automatic downloader for TV shows** (Medusa), connected to the Bittorent client
 * **Automatic downloader for movies** (Radarr), connected to the Bittorent client
 * **API Proxy for torrent trackers** (Jackett), connected to the automatic donwloader for TV shows
+* **Browser challenge proxy** (FlareSolverr), available to Jackett on the internal Docker network
 * **Reverse-proxy** (nginx), securing (basic authentication, SSL certificates) and exposing services on internet (Medusa, Radarr, Transmission)
 * **UPnP / DLNA** server (MiniDLNA) to broadcast your media files in your local network
 * **HTTP Proxy server** to share the VPN connection in your local network
