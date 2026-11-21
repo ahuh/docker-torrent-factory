@@ -51,7 +51,7 @@ Other docker compose files are available :
 ## 2) Features
 * **VPN integration** to secure peer-to-peer downloads and uploads
 * **Bittorent client** with web UI (Transmission)
-* Bittorrent **ratio booster** with web UI (JOAL)
+* Bittorrent **ratio boosters** with web UI (JOAL)
 * **Automatic downloader for TV shows** (Medusa), connected to the Bittorent client
 * **Automatic downloader for movies** (Radarr), connected to the Bittorent client
 * **API Proxy for torrent trackers** (Jackett), connected to the automatic donwloader for TV shows
@@ -68,6 +68,8 @@ Other docker compose files are available :
 
 ### 3.1) VPN subscription
 You need a VPN subscription before installing the torrent factory. You will have to specify the VPN provider, user login and password to use in the OpenVPN service. See supported providers here: http://haugene.github.io/docker-transmission-openvpn/supported-providers/
+
+The Transmission service enables DHT, peer exchange (PEX), and uTP for peer discovery and connectivity. If the VPN provider does not support inbound port forwarding peers cannot initiate connections to the VPN endpoint; publishing Transmission's peer port on the Docker host does not change this. For stronger inbound reachability, use a VPN provider that supports port forwarding.
 
 ### 3.2) SSL certificates
 If you wish to secure external access to your services web UIs with nginx, you will need to provide an SSL certificate. A self-signed certificate will do the trick, for example see this tutorial for generation: https://devcenter.heroku.com/articles/ssl-certificate-self. You will have to provide two files : `server.key` and `server.crt`.

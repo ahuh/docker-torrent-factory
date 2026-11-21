@@ -43,6 +43,13 @@ services:
       - TRANSMISSION_DOWNLOAD_QUEUE_SIZE=50
       - TRANSMISSION_SPEED_LIMIT_UP_ENABLED=true
       - TRANSMISSION_SPEED_LIMIT_UP=1000
+      # Peer discovery and transport settings
+      - TRANSMISSION_DHT_ENABLED=true
+      - TRANSMISSION_PEX_ENABLED=true
+      - TRANSMISSION_UTP_ENABLED=true
+      # If the VPN provider does not provide inbound port forwarding, publishing this port on the host will not make VPN peers reachable.
+      - TRANSMISSION_PEER_PORT=51413
+      - TRANSMISSION_PEER_PORT_RANDOM_ON_START=false
       # Transmission Web UI: kettu, combustion, transmission-web-control, flood-for-transmission
       - TRANSMISSION_WEB_UI=flood-for-transmission
       # Enable HTTP proxy
@@ -156,7 +163,7 @@ services:
       # Configuration dir
       - /share/Download/tools/jackett:/config
       # Path to torrent blackhole
-      - /path/to/blackhole:/storage/watch
+      - /share/Download/watch:/storage/watch
     ports:
       # Jackett Web UI port
       - 9117:9117
