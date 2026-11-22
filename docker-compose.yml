@@ -433,7 +433,7 @@ services:
       # Dry-run mode (no modification applied) or real mode
       - DRY_RUN_MODE=false
       # Job scheduler (cron format)
-      - "SCHEDULE_CRON=15 2 * * sun"
+      - "SCHEDULE_CRON=15 2 * * *"
       # Pyphotorg web app (no authentication; keep on a trusted network)
       - WEB_PORT=8080
       # Deduplicator - Dirs and priority orders for duplicate removal (remove duplicates from highest to lowest number)
