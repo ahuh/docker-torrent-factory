@@ -8,35 +8,124 @@ import job
 import manual_clean_cache
 
 
+WORK_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(WORK_DIR)
+
+
+def _asset_path(asset_name):
+    for asset_dir in (WORK_DIR, PROJECT_DIR):
+        asset_path = os.path.join(asset_dir, asset_name)
+        if os.path.isfile(asset_path):
+            return asset_path
+    return os.path.join(WORK_DIR, asset_name)
+
+
+FAVICON_PATH = _asset_path("pyphotorg_favicon.ico")
+FAVICON_PNG_PATH = _asset_path("pyphotorg_favicon.png")
+
+
 PAGE = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="alternate icon" href="/favicon.ico">
   <title>Pyphotorg</title>
   <style>
-    body { font: 16px system-ui, sans-serif; max-width: 38rem; margin: 3rem auto; padding: 0 1rem; color: #222; }
-    h1 { margin-bottom: 1.5rem; }
-    section { border: 1px solid #ddd; border-radius: .5rem; padding: 1rem; margin: 1rem 0; }
-    button { font: inherit; padding: .55rem .9rem; margin: .5rem .5rem 0 0; cursor: pointer; }
-    button:disabled { cursor: wait; opacity: .6; }
-    progress { width: 100%; height: 1.2rem; }
-    #message { min-height: 1.5rem; }
+    :root {
+      color-scheme: dark;
+      font-family: Inter, "Segoe UI Variable", system-ui, sans-serif;
+      color: #edf2fb;
+      background: #0b1020;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 3rem 1.25rem;
+      background: radial-gradient(ellipse at 50% 0%, #172443 0%, #0b1020 55%);
+    }
+    main { width: min(100%, 42rem); margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+    .brand img { width: 48px; height: 48px; border-radius: .75rem; }
+    h1 { margin: 0; font-size: clamp(2rem, 7vw, 2.75rem); letter-spacing: -.045em; }
+    section {
+      margin: 1rem 0;
+      padding: 1.5rem;
+      border: 1px solid #27334c;
+      border-radius: 1rem;
+      background: rgb(18 27 46 / 88%);
+      box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 18%);
+    }
+    h2 { margin: 0 0 1rem; font-size: 1.1rem; letter-spacing: -.02em; }
+    .schedule { margin: 0; color: #aab8d0; }
+    .schedule strong { display: block; margin-top: .45rem; color: #f3f6fc; font-size: 1.05rem; }
+    progress {
+      display: block;
+      width: 100%;
+      height: .6rem;
+      overflow: hidden;
+      border: 0;
+      border-radius: 1rem;
+      background: #293650;
+      accent-color: #8b9cff;
+    }
+    progress::-webkit-progress-bar { border-radius: 1rem; background: #293650; }
+    progress::-webkit-progress-value { border-radius: 1rem; background: linear-gradient(90deg, #6478f5, #9b8cff); }
+    progress::-moz-progress-bar { border-radius: 1rem; background: linear-gradient(90deg, #6478f5, #9b8cff); }
+    #message { min-height: 1.5rem; margin: 1rem 0 .5rem; color: #aab8d0; }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem; }
+    button {
+      min-height: 2.75rem;
+      padding: .65rem 1rem;
+      border: 1px solid #3c4964;
+      border-radius: .7rem;
+      background: #202b42;
+      color: #edf2fb;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 650;
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+    button:hover:not(:disabled) { border-color: #6678d8; background: #2a3856; transform: translateY(-1px); }
+    button:focus-visible { outline: 2px solid #a6b0ff; outline-offset: 3px; }
+    button.primary { border-color: #7181ff; background: #6575ed; color: #fff; }
+    button.primary:hover:not(:disabled) { border-color: #9aa5ff; background: #7887ff; }
+    button:disabled { cursor: wait; opacity: .55; }
+    @media (max-width: 34rem) {
+      body { padding: 2rem 1rem; }
+      section { padding: 1.25rem; }
+      .actions { flex-direction: column; }
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
-  <h1>Pyphotorg</h1>
-  <section>
-    <h2>Schedule</h2>
-    <p>Next execution: <strong id="next-execution">Loading...</strong></p>
-  </section>
-  <section>
-    <h2>Manual job</h2>
-    <progress id="progress" max="100" value="0"></progress>
-    <p id="message" aria-live="polite">Loading status...</p>
-    <button id="run-job">Run job now</button>
-    <button id="clean-cache">Clean hash cache</button>
-  </section>
+  <main>
+    <header class="brand">
+      <img src="/favicon.png" alt="">
+      <h1>Pyphotorg</h1>
+    </header>
+    <section>
+      <h2>Schedule</h2>
+      <p class="schedule">Next execution<strong id="next-execution">Loading...</strong></p>
+    </section>
+    <section>
+      <h2>Manual job</h2>
+      <progress id="progress" max="100" value="0" aria-label="Job progress"></progress>
+      <p id="message" aria-live="polite">Loading status...</p>
+      <div class="actions">
+        <button class="primary" id="run-job">Run job now</button>
+        <button id="clean-cache">Clean hash cache</button>
+      </div>
+    </section>
+  </main>
   <script>
     const nextExecution = document.getElementById('next-execution');
     const progress = document.getElementById('progress');
@@ -169,7 +258,7 @@ class JobController:
 def create_server(controller, host="0.0.0.0", port=None):
     class RequestHandler(BaseHTTPRequestHandler):
         def _send(self, status_code, body, content_type):
-            encoded = body.encode("utf-8")
+            encoded = body if isinstance(body, bytes) else body.encode("utf-8")
             self.send_response(status_code)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(encoded)))
@@ -180,6 +269,16 @@ def create_server(controller, host="0.0.0.0", port=None):
         def do_GET(self):
             if self.path == "/":
                 self._send(200, PAGE, "text/html; charset=utf-8")
+            elif self.path in ("/favicon.ico", "/favicon.png"):
+                asset_path = FAVICON_PATH if self.path.endswith(".ico") else FAVICON_PNG_PATH
+                try:
+                    with open(asset_path, "rb") as favicon:
+                        body = favicon.read()
+                except OSError:
+                    self._send(404, "Not found", "text/plain; charset=utf-8")
+                    return
+                content_type = "image/x-icon" if self.path.endswith(".ico") else "image/png"
+                self._send(200, body, content_type)
             elif self.path == "/api/status":
                 self._send(
                     200,

@@ -24,6 +24,18 @@ class WebAppTests(unittest.TestCase):
                 page = response.read().decode("utf-8")
             self.assertIn("Next execution", page)
             self.assertIn("window.confirm", page)
+            self.assertIn('content="dark"', page)
+            self.assertIn("font-family: Inter", page)
+            self.assertIn('src="/favicon.png"', page)
+            self.assertIn("width: 48px; height: 48px", page)
+            self.assertNotIn("Photo library manager", page)
+
+            with urlopen("http://127.0.0.1:{}/favicon.png".format(server.server_port)) as response:
+                self.assertEqual(response.headers.get_content_type(), "image/png")
+                self.assertEqual(response.read(), Path(webapp.FAVICON_PNG_PATH).read_bytes())
+            with urlopen("http://127.0.0.1:{}/favicon.ico".format(server.server_port)) as response:
+                self.assertEqual(response.headers.get_content_type(), "image/x-icon")
+                self.assertEqual(response.read(), Path(webapp.FAVICON_PATH).read_bytes())
 
             with urlopen(
                 "http://127.0.0.1:{}/api/status".format(server.server_port)

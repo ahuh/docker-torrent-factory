@@ -34,6 +34,7 @@ RUN chmod +x /scripts/*.sh
 
 # Copy Python scripts
 COPY /work/*.py /work/
+COPY /pyphotorg_favicon.ico /pyphotorg_favicon.png /work/
 
 # Entrypoint
 ENTRYPOINT ["/sbin/tini", "--"]
