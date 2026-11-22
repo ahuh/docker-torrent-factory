@@ -12,7 +12,8 @@ if [ -n "$PUID" ] && [ ! "$(id -u root)" -eq "$PUID" ]; then
     echo "Setting owner for working dirs to ${PUID}:${PGID}"
     chown -R ${RUN_AS}:${RUN_AS} \
       /work \
-      /scripts
+      /scripts \
+      /cache
 fi
 
 echo "

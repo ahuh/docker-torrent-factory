@@ -7,7 +7,7 @@ Docker image hosting a photo / video organizer and deduplicator implemented in P
 
 Main features :
 * **Move and organize photos and videos** from an incoming directory (e.g. sync dir populated with smartphone photos) into a storage directory structure, using metadatas (EXIF) to rename files and create a date-based dir structure. The program ExifTool (https://exiftool.org), embedded in the docker image, is used to implement this feature.
-* **Deduplicate photos and videos** in a storage directory structure, to save space and keep a clean photo library. The python module **Duplicate-Finder** (https://github.com/akcarsten/Duplicate-Finder ; https://pypi.org/project/Duplicate-Finder/), embedded in the docker image, is used to implement this feature.
+* **Deduplicate photos and videos** in a storage directory structure, to save space and keep a clean photo library. Files with matching sizes are compared using SHA-256 hashes, which are cached in SQLite and reused while the file remains unchanged.
 * **Schedule the organize and deduplicate job**, using a customizable cron-like syntax. The python module **Croniter** (https://github.com/taichino/croniter ; https://pypi.org/project/croniter/), embedded in the docker image, is used to implement this feature.
 
 Detailed features for organizer :
@@ -71,10 +71,13 @@ services:
       # Organizer parameters
       - ORG_TIMESTAMP_TAGS=FileModifyDate,CreationDate,CreateDate,DateTimeOriginal
       - ORG_STORAGE_PATH_PATTERN=%Y/%Y-%m/%Y%m%d_%H%M%S%%-3c.%%e
+      # Persistent deduplication cache
+      - DEDUP_CACHE_PATH=/cache/dedup_hashes.sqlite3
       # User from docker host to impersonate in container
       - PUID=500
       - PGID=1000
     volumes:
+      - pyphotorg-cache:/cache
       - /etc/localtime:/etc/localtime:ro
       # Sync dir
       - /share/homes/XXX/.Qsync:/storage/sync
@@ -83,7 +86,12 @@ services:
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
     restart: always
+
+volumes:
+  pyphotorg-cache:
 ```
+
+The named `pyphotorg-cache` volume survives container restarts and image upgrades. Do not remove it with `docker compose down -v` unless you also want to discard the cached hashes.
 
 ## Preparation
 Before running container, you have to retrieve UID and GID for the user used to mount your tv shows directory:
@@ -111,6 +119,7 @@ DEDUP_STORAGE_PATH       | | Storage directory containing photo / videos files t
 DEDUP_BACKUP_PATH        | | Backup directory to use, during deduplication operation. Each duplicate file removed is backed-up in this directory (with the same directory structure as the original). An Excel report is alse generated here at each execution (if duplicate files detected)
 DEDUP_DIR_ORDER_XX       | | OPTIONAL - Multiple variables supported (XX=01, 02, etc). Directory priority orders for duplicate removal (remove duplicates from highest to lowest number)
 DEDUP_DIR_PATH_FILTER    | | OPTIONAL - Directories containing this string are filtered to prevent deduplication. E.g. "/.@__thumb" for QNAP NAS thumbnails generated automatically
+DEDUP_CACHE_PATH         | `/cache/dedup_hashes.sqlite3` | SQLite file used to persist deduplication hashes. Keep `/cache` on a Docker volume to reuse hashes after container replacement.
 ORG_INCOMING_PATH_XX     | | Multiple variables supported (XX=01, 02, etc). List of incoming directory (source) for move / organize operation. Each value is coupled with the corresponding storage directory value (same XX index). If no variable used: the storage dir is used as source and target ('in-place' organize)
 ORG_STORAGE_PATH_XX      | | Multiple variables supported (XX=01, 02, etc). List of storage directory (target) for move / organize operation. Each value is coupled with the corresponding incoming directory value (same XX index)
 ORG_TIMESTAMP_TAGS       | `FileModifyDate,CreationDate,`<br />`CreateDate,DateTimeOriginal` | List of metadata to use in reverse order of priority for path / filename insertion, during move / organize operation. See documentation here: https://exiftool.org/filename.html#ex12
@@ -130,11 +139,32 @@ In addition to the scheduled jobs, each operation may be launched manually. Thes
   ```
   $ ./scripts/execPy.sh /work/manual_deduplicate.py -h
   ```
+* Clear the persistent deduplication hash cache:
+  ```
+  $ ./scripts/execPy.sh /work/manual_clean_cache.py
+  ```
 Each script has a command-line help available with arg `-h`, explaining how to set parameters.
 
 You may also execute the scheduled job manually:
 ```
 $ ./scripts/execPy.sh /work/manual_job.py
+```
+
+### Run Python tests
+
+From the repository root, create a Python 3.12 environment and install the test dependencies:
+```bash
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+uv pip install pandas croniter pause openpyxl
+```
+
+Note: the Docker image installs pandas from Alpine's `py3-pandas` package instead of pip to avoid a slow ARM build.
+
+Run the unit and deduplication tests:
+```bash
+cd pyphotorg
+python -m unittest discover -s tests -v
 ```
 
 ### Build and push image

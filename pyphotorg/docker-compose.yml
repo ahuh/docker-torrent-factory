@@ -2,3 +2,8 @@ services:
   pyphotorg:
     build: .
     image: ahuh/pyphotorg
+    volumes:
+      - pyphotorg-cache:/cache
+
+volumes:
+  pyphotorg-cache:

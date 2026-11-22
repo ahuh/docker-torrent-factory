@@ -1,9 +1,11 @@
 import common
 import os
+import stat
 import shutil
 import time
-import duplicates
 import pandas as pd
+from collections import defaultdict
+from hash_cache import HashCache
 
 def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None, dry_run_mode: bool = False):
     """Deduplicate files in 'dedup_dir_path', and move them in 'backup_dir_path'
@@ -32,15 +34,56 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
     """
     print("Listing all duplicates in '{}' ...".format(dedup_dir_path))
 
-    df = pd.DataFrame(columns=['file', 'hash', 'dirpath', 'filename', 'filename_length', 'order', 'duplicate'])
-    with common.IgnoreStdout():
-        df = duplicates.list_all_duplicates(dedup_dir_path, fastscan=True)
+    # Group regular files by size so only possible duplicates need hashing.
+    files_by_size = defaultdict(list)
+    for dirpath, _, filenames in os.walk(os.path.abspath(dedup_dir_path)):
+        for filename in filenames:
+            file_path = os.path.join(dirpath, filename)
+            try:
+                file_stat = os.stat(file_path)
+            except OSError as error:
+                common.print_err("* Could not inspect file '{}': {}".format(file_path, error))
+                continue
+            if stat.S_ISREG(file_stat.st_mode):
+                files_by_size[file_stat.st_size].append((file_path, file_stat))
 
-    if (dir_order_list is None):
-            # Default dir order list if none
-            dir_order_list = ['/']
+    # Exclude files whose size is unique in the directory tree.
+    duplicate_candidates = [
+        file_entry
+        for size_group in files_by_size.values()
+        if len(size_group) > 1
+        for file_entry in size_group
+    ]
 
-    if ((not df.empty) and (dir_path_filter is not None)):
+    if dir_order_list is None:
+        # Default dir order list if none
+        dir_order_list = ['/']
+
+    rows = []
+    cache_hits = 0
+    cache_misses = 0
+    # Reuse cached hashes for unchanged files and hash the remaining candidates.
+    with HashCache() as hash_cache:
+        for file_path, file_stat in duplicate_candidates:
+            try:
+                file_hash, was_cached = hash_cache.hash_file(file_path, file_stat)
+            except OSError as error:
+                common.print_err("* Could not hash file '{}': {}".format(file_path, error))
+                continue
+            rows.append((file_path, file_hash))
+            if was_cached:
+                cache_hits += 1
+            else:
+                cache_misses += 1
+
+    # Keep only hashes shared by more than one candidate file.
+    df = pd.DataFrame(rows, columns=['file', 'hash'])
+    if not df.empty:
+        df = df[df['hash'].duplicated(keep=False)]
+        df = df.sort_values(by='hash')
+    print("... Hash cache: {} hit(s), {} file(s) hashed !".format(cache_hits, cache_misses))
+
+    if (not df.empty) and (dir_path_filter is not None):
         # Do not process files containing path filter
         df = df[~df['file'].str.contains(dir_path_filter)]
 

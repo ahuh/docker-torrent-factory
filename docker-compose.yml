@@ -442,6 +442,7 @@ services:
       - "DEDUP_DIR_ORDER_03=/storage/Photos/Mobile Olivia"
       - "DEDUP_DIR_ORDER_04=/storage/Photos/Mobile Julien"
       - "DEDUP_DIR_PATH_FILTER=/.@__thumb"
+      - "DEDUP_CACHE_PATH=/cache/dedup_hashes.sqlite3"
       # Organizer - Path couples: sync dirs (source) and storage dirs (target)
       - "ORG_INCOMING_PATH_01=/storage/sync/camera-julien"
       - "ORG_STORAGE_PATH_01=/storage/Photos/Mobile Julien"
@@ -455,6 +456,7 @@ services:
       - PGID=${USER_PGID}
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - /share/Download/tools/pyphotorg/cache:/cache
       # Sync dir
       - /share/homes/ahuh/.Qsync:/storage/sync
       # Storage dir

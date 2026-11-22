@@ -29,6 +29,7 @@ MINIDLNA_CONFIG_DIR=/config/minidlna
 RADARR_CONFIG_DIR=/config/radarr
 SSL_CONFIG_DIR=/config/ssl
 TRANSMISSION_CONFIG_DIR=/config/transmission
+PYPHOTORG_CACHE_DIR=/config/pyphotorg/cache
 
 # ========================================================================
 echo "Creating / Updating configuration dirs ..."
@@ -65,6 +66,8 @@ mkdir -p ${SSL_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${SSL_CONFIG_DIR}
 mkdir -p ${TRANSMISSION_CONFIG_DIR}
 chown -R ${RUN_AS}:${RUN_AS} ${TRANSMISSION_CONFIG_DIR}
+mkdir -p ${PYPHOTORG_CACHE_DIR}
+chown -R ${RUN_AS}:${RUN_AS} ${PYPHOTORG_CACHE_DIR}
 
 echo "... DONE !"
 echo ""
