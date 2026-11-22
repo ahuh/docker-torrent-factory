@@ -12,7 +12,9 @@ ENV ENABLE_ORGANIZE=true \
 
 # Install alpine packages
 # <!> Install pandas with apk (pip version requires build on arm, too long)
-RUN apk update && apk add --no-cache bash sudo tini shadow exiftool python3 py3-pandas py3-pip \
+# Use OVH's mirror instead of the default Alpine CDN.
+RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine|https://alpinelinux.mirrors.ovh.net|g' /etc/apk/repositories \
+    && apk update && apk add --no-cache bash sudo tini shadow exiftool python3 py3-pandas py3-pip \
     && pip3 install --no-cache-dir --upgrade pip --break-system-packages \
     && ln -sf python3 /usr/bin/python
 
