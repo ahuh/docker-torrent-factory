@@ -186,3 +186,4 @@ $ ./docker-buildx.sh
 WARNINGS:
 * `docker buildx` does not work in QNAP NAS: install and execute in WSL instead
 * For Windows environment, do not execute buildx in Windows but directly in WSL
+* Multi-platform builds use the shared `buildkitd.toml` configuration to limit BuildKit parallelism to 4 operations
