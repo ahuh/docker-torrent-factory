@@ -36,9 +36,22 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
 
     # Group regular files by size so only possible duplicates need hashing.
     files_by_size = defaultdict(list)
-    for dirpath, _, filenames in os.walk(os.path.abspath(dedup_dir_path)):
+    for dirpath, dirnames, filenames in os.walk(os.path.abspath(dedup_dir_path)):
+        if dir_path_filter is not None and dir_path_filter in dirpath:
+            dirnames[:] = []
+            continue
+
+        # Prune filtered directories before os.walk enters them.
+        dirnames[:] = [
+            dirname for dirname in dirnames
+            if dir_path_filter is None
+            or dir_path_filter not in os.path.join(dirpath, dirname)
+        ]
+
         for filename in filenames:
             file_path = os.path.join(dirpath, filename)
+            if dir_path_filter is not None and dir_path_filter in file_path:
+                continue
             try:
                 file_stat = os.stat(file_path)
             except OSError as error:
@@ -82,10 +95,6 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
         df = df[df['hash'].duplicated(keep=False)]
         df = df.sort_values(by='hash')
     print("... Hash cache: {} hit(s), {} file(s) hashed !".format(cache_hits, cache_misses))
-
-    if (not df.empty) and (dir_path_filter is not None):
-        # Do not process files containing path filter
-        df = df[~df['file'].str.contains(dir_path_filter)]
 
     if df.empty:
         print("... No duplicate to remove !")

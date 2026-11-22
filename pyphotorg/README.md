@@ -118,7 +118,7 @@ SCHEDULE_CRON            | `0 2 * * sun` | Schedule for job execution in format 
 DEDUP_STORAGE_PATH       | | Storage directory containing photo / videos files to process, during deduplication operation
 DEDUP_BACKUP_PATH        | | Backup directory to use, during deduplication operation. Each duplicate file removed is backed-up in this directory (with the same directory structure as the original). An Excel report is alse generated here at each execution (if duplicate files detected)
 DEDUP_DIR_ORDER_XX       | | OPTIONAL - Multiple variables supported (XX=01, 02, etc). Directory priority orders for duplicate removal (remove duplicates from highest to lowest number)
-DEDUP_DIR_PATH_FILTER    | | OPTIONAL - Directories containing this string are filtered to prevent deduplication. E.g. "/.@__thumb" for QNAP NAS thumbnails generated automatically
+DEDUP_DIR_PATH_FILTER    | | OPTIONAL - Paths containing this literal string are skipped during the directory scan, before files are inspected. E.g. "/.@__thumb" for QNAP NAS thumbnail directories generated automatically
 DEDUP_CACHE_PATH         | `/cache/dedup_hashes.sqlite3` | SQLite file used to persist deduplication hashes. Keep `/cache` on a Docker volume to reuse hashes after container replacement.
 ORG_INCOMING_PATH_XX     | | Multiple variables supported (XX=01, 02, etc). List of incoming directory (source) for move / organize operation. Each value is coupled with the corresponding storage directory value (same XX index). If no variable used: the storage dir is used as source and target ('in-place' organize)
 ORG_STORAGE_PATH_XX      | | Multiple variables supported (XX=01, 02, etc). List of storage directory (target) for move / organize operation. Each value is coupled with the corresponding incoming directory value (same XX index)
@@ -152,9 +152,9 @@ $ ./scripts/execPy.sh /work/manual_job.py
 
 ### Run Python tests
 
-From the repository root, create a Python 3.12 environment and install the test dependencies:
+From the repository root, create a Python 3.14 environment and install the test dependencies:
 ```bash
-uv venv --python 3.12 .venv
+uv venv --python 3.14 .venv
 source .venv/bin/activate
 uv pip install pandas croniter pause openpyxl
 ```
@@ -181,8 +181,10 @@ $ ./docker-push.sh
 
 Or with buildx (build & push multiarch):
 ```bash
-$ ./docker-buildx.sh
+$ ./docker-buildx.sh [--no-cache]
 ```
+Pass `--no-cache` to prune all cache from an existing `multiarch-builder` before removing it and starting the build with a fresh builder.
+
 WARNINGS:
 * `docker buildx` does not work in QNAP NAS: install and execute in WSL instead
 * For Windows environment, do not execute buildx in Windows but directly in WSL

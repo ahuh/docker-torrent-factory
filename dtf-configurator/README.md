@@ -19,8 +19,10 @@ $ ./docker-push.sh
 
 Or with buildx (build & push multiarch):
 ```bash
-$ ./docker-buildx.sh
+$ ./docker-buildx.sh [--no-cache]
 ```
+Pass `--no-cache` to prune all cache from an existing `multiarch-builder` before removing it and starting the build with a fresh builder.
+
 WARNINGS:
 * `docker buildx` does not work in QNAP NAS: install and execute in WSL instead
 * For Windows environment, do not execute buildx in Windows but directly in WSL
