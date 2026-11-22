@@ -37,6 +37,7 @@ Detailed features for deduplicator :
 Other features :
 * All logs are displayed in stdout, available with command `docker logs pyphotorg` (or in Portainer web UI)
 * A dry-run mode is available: if enable, no file is moved in organize operation, and no file is removed in deduplicate operation. Instead, simulated actions are logged and the deduplication report is generated.
+* A lightweight web app shows the next scheduled job, starts a manual job with progress, and clears the hash cache after confirmation.
 
 ## Configuration example with docker compose
 
@@ -55,6 +56,8 @@ services:
       - DRY_RUN_MODE=false
       # Job scheduler (cron format)
       - "SCHEDULE_CRON=15 2 * * sun"
+      # Web app (no authentication; expose only on a trusted network)
+      - WEB_PORT=8080
       # Deduplicator - Dirs and priority orders for duplicate removal (remove duplicates from highest to lowest number)
       - "DEDUP_STORAGE_PATH=/storage/Photos"
       - "DEDUP_BACKUP_PATH=/storage/Backup/pyphotorg"
@@ -85,6 +88,8 @@ services:
       - /share/Perso/Photos:/storage/Photos
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
+    ports:
+      - "8080:8080"
     restart: always
 
 volumes:
@@ -126,6 +131,13 @@ ORG_TIMESTAMP_TAGS       | `FileModifyDate,CreationDate,`<br />`CreateDate,DateT
 ORG_STORAGE_PATH_PATTERN | `%Y/%Y-%m/%Y%m%d_`<br />`%H%M%S%%-3c.%%e` | Relative path to target dir (base path = ORG_STORAGE_PATH_XX) and target filenames, during organize operation. See documentation here: https://exiftool.org/filename.html#codes
 PUID                     | | User UID to use for job impersonation
 PGID                     | | User GID to use for job impersonation
+WEB_PORT                 | `8080` | Port used by the lightweight web app
+
+## Web app
+
+With the container running, open `http://<NAS address>:8080`. The page shows the next scheduled execution, allows a manual job to be started with phase/file-hashing progress, and provides a cache-clean button with a confirmation prompt. Only one job or cache-clean operation can run at a time.
+
+The web app has no authentication. Do not expose port 8080 to the public internet; restrict access to a trusted network.
 
 ## HOW-TOs
 

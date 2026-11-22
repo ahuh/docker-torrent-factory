@@ -434,6 +434,8 @@ services:
       - DRY_RUN_MODE=false
       # Job scheduler (cron format)
       - "SCHEDULE_CRON=15 2 * * sun"
+      # Pyphotorg web app (no authentication; keep on a trusted network)
+      - WEB_PORT=8080
       # Deduplicator - Dirs and priority orders for duplicate removal (remove duplicates from highest to lowest number)
       - "DEDUP_STORAGE_PATH=/storage/Photos"
       - "DEDUP_BACKUP_PATH=/storage/Backup/pyphotorg"
@@ -463,4 +465,7 @@ services:
       - /share/Perso/Photos:/storage/Photos
       # Backup dir
       - /share/Perso/Backup/pyphotorg:/storage/Backup/pyphotorg
+    ports:
+      # Pyphotorg web app
+      - 9094:8080
     restart: always

@@ -5,6 +5,7 @@ ENV ENABLE_ORGANIZE=true \
     ENABLE_DEDUPLICATE=true \
     DRY_RUN_MODE=false \
     SCHEDULE_CRON="0 2 * * sun" \
+    WEB_PORT=8080 \
     DEDUP_CACHE_PATH="/cache/dedup_hashes.sqlite3" \
     ORG_TIMESTAMP_TAGS="FileModifyDate,CreationDate,CreateDate,DateTimeOriginal" \
     ORG_STORAGE_PATH_PATTERN="%Y/%Y-%m/%Y%m%d_%H%M%S%%-3c.%%e"

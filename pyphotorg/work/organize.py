@@ -1,11 +1,14 @@
 import common
 import subprocess
 
-def organize1(path_couples: list[dict], timestamp_tags: list[str], storage_path_pattern: str, dry_run_mode: bool = False):
+def organize1(path_couples: list[dict], timestamp_tags: list[str], storage_path_pattern: str, dry_run_mode: bool = False, progress_callback=None):
     """Move photos and videos from 'incoming' path list, and organize them into the corresponding 'storage' path list
     - The program ExifTool is used to extract metadata from files, and organize dir structure and filenames (with suffix generation to prevent overwrite)
     """
-    for path_couple in path_couples:
+    total_path_couples = len(path_couples)
+    for index, path_couple in enumerate(path_couples):
+        if progress_callback is not None:
+            progress_callback(index / total_path_couples, "Organizing photos and videos")
         incoming_path = path_couple["incoming"]
         storage_path = path_couple["storage"]
 
@@ -28,6 +31,8 @@ def organize1(path_couples: list[dict], timestamp_tags: list[str], storage_path_
                 dry_run_mode=dry_run_mode
             )
             print("... Move / Organize operation done !")
+        if progress_callback is not None:
+            progress_callback((index + 1) / total_path_couples, "Organizing photos and videos")
 
 def organize2(path_list: list[str], timestamp_tags: list[str], storage_path_pattern: str, dry_run_mode: bool = False):
     """Organize photos and videos in path list

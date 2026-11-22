@@ -72,13 +72,21 @@ class DeduplicateTests(unittest.TestCase):
                 os.environ,
                 {"DEDUP_CACHE_PATH": os.path.join(temp_dir, "cache.sqlite3")},
             ):
+                progress_updates = []
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
                     first_result = build_duplicate_df(
-                        media_dir, backup_dir, dir_order_list=["/"]
+                        media_dir,
+                        backup_dir,
+                        dir_order_list=["/"],
+                        progress_callback=lambda progress, message: progress_updates.append(
+                            progress
+                        ),
                     )
                 self.assertEqual(len(first_result), 2)
                 self.assertEqual(int(first_result["duplicate"].sum()), 1)
+                self.assertEqual(progress_updates, sorted(progress_updates))
+                self.assertAlmostEqual(progress_updates[-1], 0.9)
                 self.assertIn(
                     "... Hash cache: 0 hit(s), 2 file(s) hashed !",
                     output.getvalue(),

@@ -7,7 +7,7 @@ import pandas as pd
 from collections import defaultdict
 from hash_cache import HashCache
 
-def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None, dry_run_mode: bool = False):
+def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None, dry_run_mode: bool = False, progress_callback=None):
     """Deduplicate files in 'dedup_dir_path', and move them in 'backup_dir_path'
     """
 
@@ -15,7 +15,8 @@ def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[
         dedup_dir_path=dedup_dir_path,
         backup_dir_path=backup_dir_path,
         dir_order_list=dir_order_list,
-        dir_path_filter=dir_path_filter
+        dir_path_filter=dir_path_filter,
+        progress_callback=progress_callback,
     )
 
     if not df.empty:
@@ -23,16 +24,20 @@ def deduplicate(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[
             df=df,
             dedup_dir_path=dedup_dir_path,
             backup_dir_path=backup_dir_path,
-            dry_run_mode=dry_run_mode
+            dry_run_mode=dry_run_mode,
         )
+    if progress_callback is not None:
+        progress_callback(1, "Deduplication complete")
 
-def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None) -> pd.DataFrame:
+def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list: list[str] = None, dir_path_filter: str = None, progress_callback=None) -> pd.DataFrame:
     """List duplicate files in 'dedup_dir_path', based on filesize (must be the same) and hash (must be the same)
     - Build a dataframe with 'file' column (full path) and 'duplicate' column (True for files marked for removal)
     - Order algorithm applied to keep only best file for each duplicate set: prioritize dirs from 'dir_order_list', then first dirs in alphabetic path order, then filename length (keep shortest)
     - Generate a report in 'backup_dir_path' (unless no duplicate to remove)
     """
     print("Listing all duplicates in '{}' ...".format(dedup_dir_path))
+    if progress_callback is not None:
+        progress_callback(0, "Scanning files for duplicates")
 
     # Group regular files by size so only possible duplicates need hashing.
     files_by_size = defaultdict(list)
@@ -60,6 +65,9 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
             if stat.S_ISREG(file_stat.st_mode):
                 files_by_size[file_stat.st_size].append((file_path, file_stat))
 
+    if progress_callback is not None:
+        progress_callback(0.2, "Hashing possible duplicates")
+
     # Exclude files whose size is unique in the directory tree.
     duplicate_candidates = [
         file_entry
@@ -77,7 +85,8 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
     cache_misses = 0
     # Reuse cached hashes for unchanged files and hash the remaining candidates.
     with HashCache() as hash_cache:
-        for file_path, file_stat in duplicate_candidates:
+        total_candidates = len(duplicate_candidates)
+        for index, (file_path, file_stat) in enumerate(duplicate_candidates):
             try:
                 file_hash, was_cached = hash_cache.hash_file(file_path, file_stat)
             except OSError as error:
@@ -88,12 +97,19 @@ def build_duplicate_df(dedup_dir_path: str, backup_dir_path: str, dir_order_list
                 cache_hits += 1
             else:
                 cache_misses += 1
+            if progress_callback is not None:
+                progress_callback(
+                    0.2 + 0.65 * (index + 1) / total_candidates,
+                    "Hashing possible duplicates",
+                )
 
     # Keep only hashes shared by more than one candidate file.
     df = pd.DataFrame(rows, columns=['file', 'hash'])
     if not df.empty:
         df = df[df['hash'].duplicated(keep=False)]
         df = df.sort_values(by='hash')
+    if progress_callback is not None:
+        progress_callback(0.9, "Preparing duplicate report")
     print("... Hash cache: {} hit(s), {} file(s) hashed !".format(cache_hits, cache_misses))
 
     if df.empty:

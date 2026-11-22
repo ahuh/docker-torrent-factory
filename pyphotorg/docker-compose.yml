@@ -4,6 +4,8 @@ services:
     image: ahuh/pyphotorg
     volumes:
       - pyphotorg-cache:/cache
+    ports:
+      - "8080:8080"
 
 volumes:
   pyphotorg-cache:
